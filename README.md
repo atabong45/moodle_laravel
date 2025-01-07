@@ -1,66 +1,107 @@
-<p align="center"><a href="https://laravel.com" target="_blank"><img src="https://raw.githubusercontent.com/laravel/art/master/logo-lockup/5%20SVG/2%20CMYK/1%20Full%20Color/laravel-logolockup-cmyk-red.svg" width="400" alt="Laravel Logo"></a></p>
 
-<p align="center">
-<a href="https://github.com/laravel/framework/actions"><img src="https://github.com/laravel/framework/workflows/tests/badge.svg" alt="Build Status"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/dt/laravel/framework" alt="Total Downloads"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/v/laravel/framework" alt="Latest Stable Version"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/l/laravel/framework" alt="License"></a>
-</p>
 
-## About Laravel
+# Consignes Indispensables pour Faire Fonctionner le Projet
 
-Laravel is a web application framework with expressive, elegant syntax. We believe development must be an enjoyable and creative experience to be truly fulfilling. Laravel takes the pain out of development by easing common tasks used in many web projects, such as:
+## Configuration des Services Externes du Serveur Moodle
 
-- [Simple, fast routing engine](https://laravel.com/docs/routing).
-- [Powerful dependency injection container](https://laravel.com/docs/container).
-- Multiple back-ends for [session](https://laravel.com/docs/session) and [cache](https://laravel.com/docs/cache) storage.
-- Expressive, intuitive [database ORM](https://laravel.com/docs/eloquent).
-- Database agnostic [schema migrations](https://laravel.com/docs/migrations).
-- [Robust background job processing](https://laravel.com/docs/queues).
-- [Real-time event broadcasting](https://laravel.com/docs/broadcasting).
+(### Une Autre Approche
+Une alternative consiste à :
 
-Laravel is accessible, powerful, and provides tools required for large, robust applications.
+1. Aller dans **Site Administration** → **Serveur** → **Services Web** → **Aperçu**.
+2. Sélectionner **Utilisateurs comme clients avec un token**.
+3. Suivre toutes les étapes détaillées dans cette section.
+4. Tester avec un ancien projet Moodle pour vérifier si tout fonctionne correctement.)
 
-## Learning Laravel
 
-Laravel has the most extensive and thorough [documentation](https://laravel.com/docs) and video tutorial library of all modern web application frameworks, making it a breeze to get started with the framework.
+# Utilisateurs en tant que clients avec token
 
-You may also try the [Laravel Bootcamp](https://bootcamp.laravel.com), where you will be guided through building a modern Laravel application from scratch.
+Les étapes suivantes vous aident à configurer le service web Moodle pour les utilisateurs en tant que clients. Ces étapes incluent la configuration de l'authentification recommandée via token (clés de sécurité). L'utilisateur générera son token à partir de la page des préférences.
 
-If you don't feel like reading, [Laracasts](https://laracasts.com) can help. Laracasts contains thousands of video tutorials on a range of topics including Laravel, modern PHP, unit testing, and JavaScript. Boost your skills by digging into our comprehensive video library.
+## Étapes à suivre
 
-## Laravel Sponsors
+### 1. Activer les services web
+**Description :** Les services web doivent être activés dans les fonctionnalités avancées.  
+**Étapes :**
+1. Connectez-vous en tant qu'administrateur sur votre serveur Moodle.
+2. Accédez à **Administration du site > Fonctionnalités avancées**.
+3. Activez l'option **Activer les services web**.
+4. Cliquez sur **Enregistrer les modifications**.
 
-We would like to extend our thanks to the following sponsors for funding Laravel development. If you are interested in becoming a sponsor, please visit the [Laravel Partners program](https://partners.laravel.com).
+---
 
-### Premium Partners
+### 2. Activer les protocoles
+**Description :** Au moins un protocole doit être activé. Pour des raisons de sécurité, seuls les protocoles nécessaires doivent être activés.  
+**Étapes :**
+1. Rendez-vous sur **Administration du site > Plugins > Services web > Gérer les protocoles**.
+2. Activez le protocole **REST** en cliquant sur l'icône d'activation.
+3. Désactivez les protocoles inutilisés pour sécuriser le système.
+4. Enregistrez vos modifications.
 
-- **[Vehikl](https://vehikl.com/)**
-- **[Tighten Co.](https://tighten.co)**
-- **[WebReinvent](https://webreinvent.com/)**
-- **[Kirschbaum Development Group](https://kirschbaumdevelopment.com)**
-- **[64 Robots](https://64robots.com)**
-- **[Curotec](https://www.curotec.com/services/technologies/laravel/)**
-- **[Cyber-Duck](https://cyber-duck.co.uk)**
-- **[DevSquad](https://devsquad.com/hire-laravel-developers)**
-- **[Jump24](https://jump24.co.uk)**
-- **[Redberry](https://redberry.international/laravel/)**
-- **[Active Logic](https://activelogic.com)**
-- **[byte5](https://byte5.de)**
-- **[OP.GG](https://op.gg)**
+---
 
-## Contributing
+### 3. Sélectionner un service
+**Description :** Un service est un ensemble de fonctions de services web. Vous allez permettre aux utilisateurs d'accéder à un nouveau service.  
+**Étapes :**
+1. Allez dans **Administration du site > Plugins > Services web > Gérer les services**.
+2. Cliquez sur **Ajouter un service**.
+3. Nommez le service (par exemple appeler le moodle ) et cochez **Activer**.
+4. Décochez **Utilisateurs autorisés uniquement**.
+5. Cliquez sur **Enregistrer les modifications**.
 
-Thank you for considering contributing to the Laravel framework! The contribution guide can be found in the [Laravel documentation](https://laravel.com/docs/contributions).
+---
 
-## Code of Conduct
+### 4. Ajouter des fonctions
+**Description :** Sélectionnez les fonctions nécessaires pour le nouveau service créé.  
+**Étapes :**
+1. Après avoir créé le service, cliquez sur **Ajouter des fonctions** dans la page de gestion du service.
+2. Choisissez les fonctions appropriées dans la liste déroulante (ex. : création d'utilisateurs, récupération de cours, etc.).
+3. Cliquez sur **Ajouter une fonction**.
+4. Répétez pour toutes les fonctions nécessaires.
 
-In order to ensure that the Laravel community is welcoming to all, please review and abide by the [Code of Conduct](https://laravel.com/docs/contributions#code-of-conduct).
+---
 
-## Security Vulnerabilities
+### 5. Vérifier les capacités des utilisateurs
+**Description :** Les utilisateurs doivent avoir deux capacités : `webservice:createtoken` et une capacité correspondant au protocole utilisé (par exemple `webservice/rest:use` pour REST).  
+**Étapes :**
+1. Créez un rôle spécifique pour le service web via **Administration du site > Utilisateurs > Permissions > Définir des rôles**.
+2. Cliquez sur **Ajouter un rôle** et configurez-le avec les capacités suivantes :
+   - **webservice:createtoken**
+   - **webservice/rest:use**
+3. Assignez ce rôle à l'utilisateur devant accéder au service web via **Administration du site > Utilisateurs > Permissions > Attribuer des rôles système**.
 
-If you discover a security vulnerability within Laravel, please send an e-mail to Taylor Otwell via [taylor@laravel.com](mailto:taylor@laravel.com). All security vulnerabilities will be promptly addressed.
+---
 
-## License
+### 6. Tester le service
+**Description :** Simulez l'accès externe au service en utilisant un client de test des services web.  
+**Étapes :**
+1. Connectez-vous en tant qu'utilisateur ayant la capacité **webservice:createtoken**.
+2. Accédez à vos préférences utilisateur et générez un **token** via la section **Clés de sécurité**.
+3. Utilisez un outil comme Postman ou Curl pour tester le service en utilisant le token généré.
+4. Assurez-vous de sélectionner un protocole activé lors du test.
+(autre methode de tester)
+ entrer cette url sur votre navigateur en remplacant [votre token] par la valeur de votre token sans les crochets bien sur
+recuperer les tous les utilisateurs
+http://localhost/webservice/rest/server.php?wstoken=[votre token]&wsfunction=core_user_get_users&moodlewsrestformat=json&criteria[0][key]=email&criteria[0][value]=%
+rasurer vous d'avoir ajouter la fonction core_user_get_users  dans votre service moodle
 
-The Laravel framework is open-sourced software licensed under the [MIT license](https://opensource.org/licenses/MIT).
+
+### 7. Générer et copier un token avec l'utilisateur administrateur
+**Description :** L'administrateur peut générer un token pour lui-même ou pour d'autres utilisateurs et le copier pour l'utiliser dans les tests ou les intégrations.  
+**Étapes :**
+1. Connectez-vous sur Moodle en tant qu'administrateur.
+2. Accédez à **Administration du site > Plugins > Services web > Gérer les tokens**.
+3. Cliquez sur **Créer un token**.
+4. Renseignez les informations suivantes :
+   - **Utilisateur :** Sélectionnez "Administrateur" ou l'utilisateur concerné.
+   - **Service :** Choisissez le service que vous avez configuré précédemment.
+   - **Date d’expiration (optionnel) :** Définissez une date si nécessaire.
+5. Cliquez sur **Enregistrer les modifications**.
+6. Une fois le token généré, copiez-le et conservez-le dans un endroit sûr.
+
+⚠️ **Remarque :** Ce token est essentiel pour accéder aux services web. Ne le partagez qu'avec les utilisateurs ou systèmes autorisés.
+
+
+une fois le token copier, le mettre dans les variables d'environnement, rajouter egalement l'url de l'api afin d'avoir quelquechose de ce format dans votre fichier .env sur votre projet laravel 
+
+MOODLE_API_URL=http://localhost/webservice/rest/server.php
+MOODLE_API_TOKEN=8f64ca18b0aa92ced02421165c003d24
