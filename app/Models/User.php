@@ -21,6 +21,8 @@ class User extends Authenticatable
         'name',
         'email',
         'password',
+        'roles',
+        'profile_picture',
     ];
 
     /**
@@ -43,6 +45,16 @@ class User extends Authenticatable
         return [
             'email_verified_at' => 'datetime',
             'password' => 'hashed',
+            'roles' => 'array'
         ];
+    }
+        protected static function boot(){
+        parent::boot();
+
+        static::creating(function ($user) {
+            if (empty($user->roles)) {
+                $user->roles = ['ROLE_USER'];
+            }
+        });
     }
 }
