@@ -54,7 +54,9 @@
                 @if ($user->profile_picture)
                     <img src="{{ asset('storage/' . $user->profile_picture) }}" alt="Profile Picture" class="w-32 h-32 rounded-full">
                 @else
-                    <p class="text-sm text-gray-600">{{ __('No profile picture uploaded.') }}</p>
+                     <!-- Afficher la photo par défaut -->
+                     <img src="{{ asset('images/default-profile-picture.png') }}" alt="Default Profile Picture" class="w-32 h-32 rounded-full">
+                     <p class="text-sm text-gray-600">{{ __('No profile picture uploaded.') }}</p>
                 @endif
             </div>
 
