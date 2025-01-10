@@ -51,7 +51,7 @@ class User extends Authenticatable
             'roles' => 'array'
         ];
     }
-        protected static function boot(){
+    protected static function boot(){
         parent::boot();
 
         static::creating(function ($user) {
@@ -61,7 +61,22 @@ class User extends Authenticatable
         });
     }
 
-        public function hasRole($role)
+    public function hasRole($role)
     {
-        return $this->role === $role;    }
+        return $this->role === $role;    
+    }
+    public function teacherCourses()
+    {
+        return $this->hasMany(Course::class, 'teacher_id');
+    }
+
+    public function submissions()
+    {
+        return $this->hasMany(Submission::class, 'student_id');
+    }
+
+    public function grades()
+    {
+        return $this->hasMany(Grade::class, 'teacher_id');
+    }
 }
