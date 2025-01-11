@@ -82,10 +82,12 @@ j'ai deja ecrit les migration et les modeles, il me reste les routes et les cont
 tu vas m'aider a creer ces controller, pour une application laravel-blade, docn pour chaque entite, tu me donne:
 -le code du conroller
 -les routes a coller dans web.php
--la commande pour creer les vues
--le code source de la vue pour tester le controller
+-la commande pour creer les vues: "mkdir -p resources/views/example
+touch resources/views/example/{index,create,edit,show}.blade.php"
+
+-le code source complet des vues index,show,edit,create pour tester le controller
 
 on iraa classe par classe, a chaque fois tu attendra le modele, j'ai gere mon authentification avec breeze.
 
 continuons par ce modele:""
-donne moi ce que je t'ai demande.
+donne moi ce que je t'ai demande et donne le code complet partout.

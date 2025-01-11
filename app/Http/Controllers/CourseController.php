@@ -9,7 +9,7 @@ class CourseController extends Controller
 {
     public function index()
     {
-        $courses = Course::with('teacher')->paginate(10);
+        $courses = Course::with('teacher')->get();
         return view('courses.index', compact('courses'));
     }
 
@@ -22,17 +22,17 @@ class CourseController extends Controller
     {
         $validated = $request->validate([
             'fullname' => 'required|string|max:255',
-            'shortname' => 'required|string|max:100',
+            'shortname' => 'required|string|max:255',
             'summary' => 'nullable|string',
-            'numsections' => 'required|integer|min:1',
+            'numsections' => 'required|integer',
             'startdate' => 'required|date',
-            'enddate' => 'nullable|date|after:startdate',
+            'enddate' => 'nullable|date|after_or_equal:startdate',
+            'teacher_id' => 'required|exists:users,id',
         ]);
 
-        $course = Course::create($validated + ['teacher_id' => auth()->id()]);
+        Course::create($validated);
 
-        return redirect()->route('courses.index')
-            ->with('success', 'Cours créé avec succès.');
+        return redirect()->route('courses.index')->with('success', 'Course created successfully!');
     }
 
     public function show(Course $course)
@@ -42,36 +42,29 @@ class CourseController extends Controller
 
     public function edit(Course $course)
     {
-        $this->authorize('update', $course);
         return view('courses.edit', compact('course'));
     }
 
     public function update(Request $request, Course $course)
     {
-        $this->authorize('update', $course);
-        
         $validated = $request->validate([
             'fullname' => 'required|string|max:255',
-            'shortname' => 'required|string|max:100',
+            'shortname' => 'required|string|max:255',
             'summary' => 'nullable|string',
-            'numsections' => 'required|integer|min:1',
+            'numsections' => 'required|integer',
             'startdate' => 'required|date',
-            'enddate' => 'nullable|date|after:startdate',
+            'enddate' => 'nullable|date|after_or_equal:startdate',
+            'teacher_id' => 'required|exists:users,id',
         ]);
 
         $course->update($validated);
 
-        return redirect()->route('courses.show', $course)
-            ->with('success', 'Cours mis à jour avec succès.');
+        return redirect()->route('courses.index')->with('success', 'Course updated successfully!');
     }
 
     public function destroy(Course $course)
     {
-        $this->authorize('delete', $course);
-        
         $course->delete();
-
-        return redirect()->route('courses.index')
-            ->with('success', 'Cours supprimé avec succès.');
+        return redirect()->route('courses.index')->with('success', 'Course deleted successfully!');
     }
 }

@@ -4,6 +4,14 @@ use App\Http\Controllers\ProfileController;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\AdminController;
 use App\Http\Controllers\AssignmentController;
+use App\Http\Controllers\CourseController;
+use App\Http\Controllers\GradeController;
+use App\Http\Controllers\ModuleController;
+use App\Http\Controllers\SectionController;
+use App\Http\Controllers\SubmissionController;
+use App\Http\Controllers\UserController;
+
+
 
 // Welcome route (accessible sans authentification)
 Route::get('/', function () {
@@ -30,6 +38,26 @@ Route::middleware('auth')->group(function () {
 
     // Assignments
     Route::resource('assignments', AssignmentController::class);
+
+    // Courses
+    Route::resource('courses', CourseController::class)->middleware('auth');
+
+    //grades
+    Route::resource('grades', GradeController::class);
+
+    //modules
+    Route::resource('modules', ModuleController::class);
+
+    // Sections
+    Route::resource('sections', SectionController::class);
+
+    // Submissions
+    Route::resource('submissions', SubmissionController::class);
+
+    // Users
+    Route::resource('users', UserController::class);
+
+
 });
 
 // Include authentication routes
