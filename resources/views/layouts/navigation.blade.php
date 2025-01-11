@@ -15,6 +15,21 @@
                     <x-nav-link :href="route('dashboard')" :active="request()->routeIs('dashboard')">
                         {{ __('Dashboard') }}
                     </x-nav-link>
+                    <x-nav-link :href="route('courses.index')" :active="request()->routeIs('courses.index')">
+                        {{ __('Cours') }}
+                    </x-nav-link>
+                    <x-nav-link :href="route('modules.index')" :active="request()->routeIs('modules.index')">
+                        {{ __('Modules') }}
+                    </x-nav-link>
+                    <x-nav-link :href="route('sections.index')" :active="request()->routeIs('sections.index')">
+                        {{ __('Sections') }}
+                    </x-nav-link>
+                    <x-nav-link :href="route('assignments.index')" :active="request()->routeIs('assignments.index')">
+                        {{ __('Évaluations') }}
+                    </x-nav-link>
+                    <x-nav-link :href="route('profile.edit')" :active="request()->routeIs('profile.edit')">
+                        {{ __('Profil') }}
+                    </x-nav-link>
                 </div>
             </div>
 
@@ -69,6 +84,21 @@
         <div class="pt-2 pb-3 space-y-1">
             <x-responsive-nav-link :href="route('dashboard')" :active="request()->routeIs('dashboard')">
                 {{ __('Dashboard') }}
+            </x-responsive-nav-link>
+            <x-responsive-nav-link :href="route('courses.index')" :active="request()->routeIs('courses.index')">
+                {{ __('Cours') }}
+            </x-responsive-nav-link>
+            <x-responsive-nav-link :href="route('modules.index')" :active="request()->routeIs('modules.index')">
+                {{ __('Modules') }}
+            </x-responsive-nav-link>
+            <x-responsive-nav-link :href="route('sections.index')" :active="request()->routeIs('sections.index')">
+                {{ __('Sections') }}
+            </x-responsive-nav-link>
+            <x-responsive-nav-link :href="route('assignments.index')" :active="request()->routeIs('assignments.index')">
+                {{ __('Évaluations') }}
+            </x-responsive-nav-link>
+            <x-responsive-nav-link :href="route('profile.edit')" :active="request()->routeIs('profile.edit')">
+                {{ __('Profil') }}
             </x-responsive-nav-link>
         </div>
 
