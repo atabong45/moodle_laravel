@@ -1,107 +1,207 @@
-![Capture](public/Capture.png)
+# MOODLE CLIENT
+*ENSPY - 4e année GENIE INFORMATIQUE*
 
-# Consignes Indispensables pour Faire Fonctionner le Projet
+*Unité d'Enseignement: Interface Homme Machine (IHM)*  
+*Encadreur: Pr. BATCHAKUI*
 
-## Configuration des Services Externes du Serveur Moodle
+## Table des matières
+1. [A propos du projet](#a-propos-du-projet)
+2. [Contexte technologique](#contexte-technologique)
+3. [Installation et Lancement](#installation-et-lancement)
+   - 3.1. [Configuration du serveur Moodle](#configuration-du-serveur-moodle)
+   - 3.2. [Lancement du serveur](#lancement-du-serveur)
+4. [Documentation](#documentation)
+5. [Equipe du projet](#equipe-du-projet)
+6. [Contribution](#contribution)
+7. [Contact](#contact)
+8. [License](#license)
 
-(### Une Autre Approche
-Une alternative consiste à :
 
-1. Aller dans **Site Administration** → **Serveur** → **Services Web** → **Aperçu**.
-2. Sélectionner **Utilisateurs comme clients avec un token**.
-3. Suivre toutes les étapes détaillées dans cette section.
-4. Tester avec un ancien projet Moodle pour vérifier si tout fonctionne correctement.)
+## A propos du projet
+Moodle Client est une application web qui permet aux utilisateurs d'interagir avec une plateforme Moodle depuis un appareil externe, comme un ordinateur ou un appareil mobile leur permettant ainsi de gérer leurs cours, évaluations, forums, et ressources pédagogiques.
 
+## Contexte technologique
+Moodle Client est réalisé à l'aide des technologies :
 
-# Utilisateurs en tant que clients avec token
+- **PHP**, Langage de programmation web
+- **Laravel**, Framework PHP
+- **Blade**, Moteur de templates Laravel
 
-Les étapes suivantes vous aident à configurer le service web Moodle pour les utilisateurs en tant que clients. Ces étapes incluent la configuration de l'authentification recommandée via token (clés de sécurité). L'utilisateur générera son token à partir de la page des préférences.
+## Installation et Lancement
 
-## Étapes à suivre
+### Configuration du serveur Moodle
 
-### 1. Activer les services web
-**Description :** Les services web doivent être activés dans les fonctionnalités avancées.  
-**Étapes :**
-1. Connectez-vous en tant qu'administrateur sur votre serveur Moodle.
-2. Accédez à **Administration du site > Fonctionnalités avancées**.
-3. Activez l'option **Activer les services web**.
-4. Cliquez sur **Enregistrer les modifications**.
+#### Notes
+- On désignera par `moodle_wwwroot` l'adresse de base du site de moodle. (Vous pouvez retrouver cette valeur dans le fichier `/var/www/html/moodle/config.php` via la variable `$CFG->wwwroot`).
+- Toutes les instructions détaillées ci-dessous peuvent être suivies sur à partir de la page `<moodle_wwwroot>/admin/settings.php?section=webservicesoverview`.
+- Pour la suite, connectez-vous d'abord en tant qu'administrateur sur votre serveur Moodle.
 
----
+#### 1. Activer les services web
+1. Cliquez sur l'étape 1.
+2. Activez l'option **Activer les services web**.
+3. Enregistrez vos modifications.
 
-### 2. Activer les protocoles
-**Description :** Au moins un protocole doit être activé. Pour des raisons de sécurité, seuls les protocoles nécessaires doivent être activés.  
-**Étapes :**
-1. Rendez-vous sur **Administration du site > Plugins > Services web > Gérer les protocoles**.
+#### 2. Activer les protocoles
+1. Cliquez sur l'étape 2.
 2. Activez le protocole **REST** en cliquant sur l'icône d'activation.
 3. Désactivez les protocoles inutilisés pour sécuriser le système.
 4. Enregistrez vos modifications.
 
----
-
-### 3. Sélectionner un service
-**Description :** Un service est un ensemble de fonctions de services web. Vous allez permettre aux utilisateurs d'accéder à un nouveau service.  
-**Étapes :**
-1. Allez dans **Administration du site > Plugins > Services web > Gérer les services**.
+#### 3. Sélectionner un service
+1. Rendez-vous directement à l'étape 5.
 2. Cliquez sur **Ajouter un service**.
-3. Nommez le service (par exemple appeler le moodle ) et cochez **Activer**.
-4. Décochez **Utilisateurs autorisés uniquement**.
-5. Cliquez sur **Enregistrer les modifications**.
+3. Nommez le service *(exple: `moodle`)*.
+4. Cochez **Activer** et décochez **Utilisateurs autorisés uniquement**.
+5. Enregistrez vos modifications.
 
----
+#### 4. Ajouter des fonctions
+L'étape précédente vous a ramené sur la page des services
+1. Cliquez sur le lien **Fonctions** qui se trouve sur la ligne du service que vous avez créé.
+2. Cliquez sur **Ajouter des fonctions**.
+3. Ajoutez par exemple `core_user_create_users` (qui sera nécessaire pour le test).
 
-### 4. Ajouter des fonctions
-**Description :** Sélectionnez les fonctions nécessaires pour le nouveau service créé.  
-**Étapes :**
-1. Après avoir créé le service, cliquez sur **Ajouter des fonctions** dans la page de gestion du service.
-2. Choisissez les fonctions appropriées dans la liste déroulante (ex. : création d'utilisateurs, récupération de cours, etc.).
-3. Cliquez sur **Ajouter une fonction**.
-4. Répétez pour toutes les fonctions nécessaires.
-
----
-
-### 5. Vérifier les capacités des utilisateurs
-**Description :** Les utilisateurs doivent avoir deux capacités : `webservice:createtoken` et une capacité correspondant au protocole utilisé (par exemple `webservice/rest:use` pour REST).  
-**Étapes :**
-1. Créez un rôle spécifique pour le service web via **Administration du site > Utilisateurs > Permissions > Définir des rôles**.
-2. Cliquez sur **Ajouter un rôle** et configurez-le avec les capacités suivantes :
+#### 5. Vérifier les capacités des utilisateurs
+1. Créez un rôle spécifique pour le service web via **Administration du site > Utilisateurs > Permissions > Définir des rôles** par exemple `admin`.
+2. Cliquez sur **Ajouter un rôle**.
+3. Attribuez des configurations selon votre bon-vouloir.
+4. A la toute fin, permettez les capacités suivantes *(vous pouvez les rechercher via la barre de recherche tels que cités)*: 
    - **webservice:createtoken**
    - **webservice/rest:use**
-3. Assignez ce rôle à l'utilisateur devant accéder au service web via **Administration du site > Utilisateurs > Permissions > Attribuer des rôles système**.
+5. Créer le rôle (sauvegarde)
+6. Rendez-vous sur **Administration du site > Utilisateurs > Permissions > Attribuer des rôles système**.
+7. Choisissez le rôle que vous venez de créer et ajoutez ce rôle à votre utilisateur. *La sauvegarde est automatique.*
+
+#### 6. Génerer le jeton d'authentification
+1. Rendez-vous sur **Administration du site > Serveur > Services Web > Gérer les jetons**.
+2. Créer un jeton, configurez-le et enregistrez les modifications.
+
+#### 7. Tester le service
+A l'aide d'un outil comme Postman ou Curl, vous pouvez tester le service en utilisant le jeton géneré.
+
+1. Executez la requête suivante en renseignant la valeur de `<JETON>`:
+```bash
+   curl -X POST "http://localhost/webservice/rest/server.php?wstoken=<JETON>&wsfunction=core_user_create_users&moodlewsrestformat=json" \
+      --data "users[0][username]=newuser" \
+      --data "users[0][password]=#Password123" \
+      --data "users[0][firstname]=John" \
+      --data "users[0][lastname]=Doe" \
+      --data "users[0][email]=newuser@example.com"
+```
+
+*Vous devriez voir un résultat du type : `[{"id":3,"username":"newuser"}]`. Cela prouve que le test est réussi !**
+
+2. Copiez le jeton pour le sauvegarder précieusement. Il doit vous être secret.
+
+### Lancement du projet Moodle Client
+
+#### Prérequis
+Avant de lancer le projet, assurez-vous que les éléments suivants sont installés sur votre système :
+
+- **PHP** >= 8.2
+- **Composer**
+- **Node.js** et **npm** (ou **Yarn**) pour gérer les assets front-end
+- **MySQL** ou un autre serveur de base de données compatible
+- **Serveur web** (Apache ou Nginx)
+- **Moodle** configuré avec des services web activés
+
+#### Étapes pour lancer le projet
+
+##### 1. Cloner le dépôt
+```bash
+git clone https://github.com/atabong45/moodle_laravel.git
+cd moodle_laravel
+```
+
+##### 2. Installer les dépendances
+Exécutez la commande suivante pour installer les dépendances backend avec Composer :
+
+```bash
+composer install
+```
+
+Ensuite, installez les dépendances front-end avec npm :
+
+```bash
+npm install
+```
+
+Enfin, compilez le projet :
+
+```bash
+npm run build
+```
+
+##### 3. Configurer l'environnement
+Copiez le fichier `.env.example` en `.env` et configurez les paramètres suivants :
+
+- **Connexion à la base de données** : Renseignez les champs `DB_CONNECTION`, `DB_HOST`, `DB_PORT`, `DB_DATABASE`, `DB_USERNAME`, et `DB_PASSWORD`.
+
+- **URL et token Moodle** : Ajoutez ceci dans votre fichier `.env` en modifiant ces variables selon votre convenance :
+
+```bash
+   MOODLE_API_URL=http://localhost/webservice/rest/server.php
+   MOODLE_API_TOKEN=<TOKEN>
+```
+
+##### 4. Générer une clé d'application Laravel
+```bash
+php artisan key:generate
+```
+
+##### 5. Migrer la base de données
+Lancez les migrations pour créer les tables nécessaires :
+
+```bash
+php artisan migrate
+```
+
+##### 6. Compiler les assets
+Pour compiler les fichiers front-end avec Vite, exécutez :
+
+```bash
+npm run build
+```
+
+En mode développement, utilisez :
+
+```bash
+npm run dev
+```
+
+##### 7. Lancer le serveur local
+Démarrez le serveur Laravel avec la commande suivante :
+
+```bash
+php artisan serve
+```
+
+L'application sera disponible sur [http://127.0.0.1:8000](http://127.0.0.1:8000).
+
+## Equipe du projet
+Notre équipe est constituée d'étudiants de l'Ecole Nationale Supérieure Polytechnique de Yaoundé qui suivent :
+
+| NAME                         | Matriculation Number |
+|------------------------------|----------------------|
+| DANGA PATCHOUM Blonde        | 21P169               |
+| VUIDE OUENDEU Jordan         | 21P018               |
+
+
+## Contribution
+We welcome contributions from the academic community and industry professionals. To contribute:
+
+1. Fork the project
+2. Create your branch (`git checkout -b feature/AmazingFeature`)
+3. Commit your changes (`git commit -m 'Add some AmazingFeature'`)
+4. Push to the branch (`git push origin feature/AmazingFeature`)
+5. Open a Pull Request
+
+## Contact
+For more information about the project, contact the development team at Polytechnique Yaoundé.
+
+## License
+This project is licensed under the MIT License - see the [LICENSE.md](LICENSE.md) file for details.
 
 ---
-
-### 6. Tester le service
-**Description :** Simulez l'accès externe au service en utilisant un client de test des services web.  
-**Étapes :**
-1. Connectez-vous en tant qu'utilisateur ayant la capacité **webservice:createtoken**.
-2. Accédez à vos préférences utilisateur et générez un **token** via la section **Clés de sécurité**.
-3. Utilisez un outil comme Postman ou Curl pour tester le service en utilisant le token généré.
-4. Assurez-vous de sélectionner un protocole activé lors du test.
-(autre methode de tester)
- entrer cette url sur votre navigateur en remplacant [votre token] par la valeur de votre token sans les crochets bien sur
-recuperer les tous les utilisateurs
-http://localhost/webservice/rest/server.php?wstoken=[votre token]&wsfunction=core_user_get_users&moodlewsrestformat=json&criteria[0][key]=email&criteria[0][value]=%
-rasurer vous d'avoir ajouter la fonction core_user_get_users  dans votre service moodle
-
-
-### 7. Générer et copier un token avec l'utilisateur administrateur
-**Description :** L'administrateur peut générer un token pour lui-même ou pour d'autres utilisateurs et le copier pour l'utiliser dans les tests ou les intégrations.  
-**Étapes :**
-1. Connectez-vous sur Moodle en tant qu'administrateur.
-2. Accédez à **Administration du site > Plugins > Services web > Gérer les tokens**.
-3. Cliquez sur **Créer un token**.
-4. Renseignez les informations suivantes :
-   - **Utilisateur :** Sélectionnez "Administrateur" ou l'utilisateur concerné.
-   - **Service :** Choisissez le service que vous avez configuré précédemment.
-   - **Date d’expiration (optionnel) :** Définissez une date si nécessaire.
-5. Cliquez sur **Enregistrer les modifications**.
-6. Une fois le token généré, copiez-le et conservez-le dans un endroit sûr.
-
-⚠️ **Remarque :** Ce token est essentiel pour accéder aux services web. Ne le partagez qu'avec les utilisateurs ou systèmes autorisés.
-
-
-une fois le token copier, le mettre dans les variables d'environnement, rajouter egalement l'url de l'api afin d'avoir quelquechose de ce format dans votre fichier .env sur votre projet laravel 
-
-MOODLE_API_URL=http://localhost/webservice/rest/server.php
-MOODLE_API_TOKEN=8f64ca18b0aa92ced02421165c003d24
+*Projet développé dans le cadre de l'unité d'enseignement Interface Homme Machine (IHM)*
+*Département de Genie Informatique*  
+*Polytechnique Yaoundé, 2024*
