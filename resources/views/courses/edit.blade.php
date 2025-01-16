@@ -1,47 +1,57 @@
 @extends('layouts.app')
 
 @section('content')
-<div class="container">
-    <h1>Modifier un cours</h1>
-    <form action="{{ route('courses.update', $course->id) }}" method="POST">
+<div class="container w-4/5 mt-10 mx-auto flex flex-col justify-center">
+    <h1 class="text-3xl font-bold">Edit Course: {{ $course->fullname }}</h1>
+    <hr class="w-full h-[2px] mt-2 mb-4 bg-black" />
+
+    <form action="{{ route('courses.update', $course->id) }}" method="POST" enctype="multipart/form-data">
         @csrf
         @method('PUT')
-        <div class="mb-3">
-            <label for="fullname" class="form-label">Nom complet</label>
-            <input type="text" class="form-control" id="fullname" name="fullname" value="{{ $course->fullname }}" required>
-        </div>
-        <div class="mb-3">
-            <label for="shortname" class="form-label">Nom court</label>
-            <input type="text" class="form-control" id="shortname" name="shortname" value="{{ $course->shortname }}" required>
-        </div>
-        <div class="mb-3">
-            <label for="summary" class="form-label">Résumé</label>
-            <textarea class="form-control" id="summary" name="summary">{{ $course->summary }}</textarea>
-        </div>
-        <div class="mb-3">
-            <label for="numsections" class="form-label">Nombre de sections</label>
-            <input type="number" class="form-control" id="numsections" name="numsections" value="{{ $course->numsections }}" required>
-        </div>
-        <div class="mb-3">
-            <label for="startdate" class="form-label">Date de début</label>
-            <input type="date" class="form-control" id="startdate" name="startdate" value="{{ $course->startdate->format('Y-m-d') }}" required>
-        </div>
-        <div class="mb-3">
-            <label for="enddate" class="form-label">Date de fin</label>
-            <input type="date" class="form-control" id="enddate" name="enddate" value="{{ $course->enddate ? $course->enddate->format('Y-m-d') : '' }}">
-        </div>
-        <div class="mb-3">
-            <label for="teacher_id" class="form-label">Enseignant</label>
-            <select class="form-select" id="teacher_id" name="teacher_id" required>
-                @foreach($teachers as $teacher)
-                    <option value="{{ $teacher->id }}" {{ $course->teacher_id == $teacher->id ? 'selected' : '' }}>
-                        {{ $teacher->username }}
-                    </option>
-                @endforeach
-            </select>
-        </div>
-        <button type="submit" class="btn btn-success">Enregistrer</button>
-        <a href="{{ route('courses.index') }}" class="btn btn-secondary">Annuler</a>
+        
+        <fieldset class="flex flex-col gap-4">
+            <div class="flex items-center">
+                <label for="fullname" class="w-36">Fullname :</label>
+                <input type="text" name="fullname" class="py-1 rounded-md" id="fullname" value="{{ old('fullname', $course->fullname) }}" required>
+            </div>
+            <div class="flex items-center">
+                <label for="shortname" class="w-36">Shortname :</label>
+                <input type="text" name="shortname" class="py-1 rounded-md" id="shortname" value="{{ old('shortname', $course->shortname) }}" required>
+            </div>
+            <div class="flex items-center">
+                <label for="summary" class="w-36">Summary :</label>
+                <textarea name="summary" class="py-1 rounded-md" id="summary">{{ old('summary', $course->summary) }}</textarea>
+            </div>
+            <div class="flex items-center">
+                <label for="numsections" class="w-36">Number of Sections :</label>
+                <input type="number" name="numsections" class="py-1 rounded-md" id="numsections" value="{{ old('numsections', $course->numsections) }}" required>
+            </div>
+            <div class="flex items-center">
+                <label for="startdate" class="w-36">Start Date :</label>
+                <input type="date" name="startdate" class="py-1 rounded-md" id="startdate" value="{{ old('startdate', $course->startdate) }}" required>
+            </div>
+            <div class="flex items-center">
+                <label for="enddate" class="w-36">End Date :</label>
+                <input type="date" name="enddate" class="py-1 rounded-md" id="enddate" value="{{ old('enddate', $course->enddate) }}">
+            </div>
+            <div class="flex items-center">
+                <label for="teacher_id" class="w-36">Teacher :</label>
+                <input type="number" name="teacher_id" class="py-1 rounded-md" id="teacher_id" value="{{ old('teacher_id', $course->teacher_id) }}" required>
+            </div>
+        </fieldset>
+
+        <x-button type="full" class="mt-6">
+            Update Course
+        </x-button>
+    </form>
+
+    <!-- Delete Button -->
+    <form action="{{ route('courses.destroy', $course->id) }}" method="POST" class="mt-4">
+        @csrf
+        @method('DELETE')
+        <x-button type="full" class="mt-6 bg-red-600 hover:bg-red-700">
+            Delete Course
+        </x-button>
     </form>
 </div>
 @endsection

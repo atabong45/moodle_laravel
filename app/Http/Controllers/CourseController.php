@@ -3,13 +3,21 @@
 namespace App\Http\Controllers;
 
 use App\Models\Course;
+use Exception;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
+use Illuminate\Validation\ValidationException;
 
 class CourseController extends Controller
 {
-    public function index()
+    public function index(Request $request)
     {
-        $courses = Course::with('teacher')->get();
+        $search = $request->get('search'); // To filter by name
+
+        $courses = Course::when($search, function ($query, $search) {
+            return $query->where('fullname', 'like', '%' . $search . '%');
+        })->with('teacher')->get();
+
         return view('courses.index', compact('courses'));
     }
 
@@ -20,15 +28,21 @@ class CourseController extends Controller
 
     public function store(Request $request)
     {
-        $validated = $request->validate([
-            'fullname' => 'required|string|max:255',
-            'shortname' => 'required|string|max:255',
-            'summary' => 'nullable|string',
-            'numsections' => 'required|integer',
-            'startdate' => 'required|date',
-            'enddate' => 'nullable|date|after_or_equal:startdate',
-            'teacher_id' => 'required|exists:users,id',
-        ]);
+        try{
+            $validated = $request->validate([
+                'fullname' => 'required|string|max:255',
+                'shortname' => 'required|string|max:255',
+                'summary' => 'nullable|string',
+                'numsections' => 'required|integer',
+                'startdate' => 'required|date',
+                'enddate' => 'nullable|date|after_or_equal:startdate',
+            ]);
+        } catch (ValidationException $e) {
+            dd($e);
+            return redirect()->route('courses.create')->with('error', 'Course not created ! Check parameters');
+        }
+
+        $validated['teacher_id'] = Auth::id();
 
         Course::create($validated);
 
