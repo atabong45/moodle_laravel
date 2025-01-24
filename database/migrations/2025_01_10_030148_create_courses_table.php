@@ -17,9 +17,9 @@ return new class extends Migration
             $table->string('shortname');
             $table->text('summary')->nullable();
             $table->integer('numsections');
-            $table->timestamp('startdate');
+            $table->timestamp('startdate')->nullable();;
             $table->timestamp('enddate')->nullable();
-            $table->foreignId('teacher_id')->constrained('users')->onDelete('cascade');
+            $table->foreignId('teacher_id')->nullable()->constrained('users')->onDelete('cascade');
             $table->timestamps();
         });
     }
