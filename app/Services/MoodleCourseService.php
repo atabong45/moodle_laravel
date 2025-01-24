@@ -30,12 +30,20 @@ class MoodleCourseService
             $params = array_merge($this->defaultParams, [
                 'wsfunction' => 'core_course_get_courses'
             ]);
-
             $response = Http::get($this->apiUrl, $params);
-            return $response->json();
+
+            $data = $response->json();
+
+            // Check if the response contains an error
+            if (isset($data['errorcode']) || isset($data['exception'])) {
+                Log::error('Moodle API Error (getAllCourses): ' . $data['message']);
+                return [];
+            }
+
+            return $data;
         } catch (\Exception $e) {
             Log::error('Moodle API Error (getAllCourses): ' . $e->getMessage());
-            throw $e;
+            return [];
         }
     }
 
@@ -48,8 +56,7 @@ class MoodleCourseService
             $params = array_merge($this->defaultParams, [
                 'wsfunction' => 'core_course_create_courses',
                 'courses[0][fullname]' => $courseData['fullname'],
-                'courses[0][shortname]' => $courseData['shortname'],
-                'courses[0][categoryid]' => $courseData['categoryid']
+                'courses[0][shortname]' => $courseData['shortname']
             ]);
 
             // Add optional parameters if they exist
