@@ -1,7 +1,7 @@
 <div class="rounded-lg overflow-hidden border border-primary/20 shadow-md">
     <div class="h-24 overflow-hidden">
         <a href="">
-            <img src="{{ $course->img ?? 'default-image.jpg' }}" alt="{{ $course->fullname ?? 'No name' }} image" />
+            <img src="{{ $course->img ?? 'images/mathematics.jpeg' }}" alt="{{ $course->fullname ?? 'No name' }} image" />
         </a>
     </div>
     <div class="h-14 p-2 py-0">
