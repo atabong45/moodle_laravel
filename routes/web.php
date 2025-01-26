@@ -10,6 +10,7 @@ use App\Http\Controllers\ModuleController;
 use App\Http\Controllers\SectionController;
 use App\Http\Controllers\SubmissionController;
 use App\Http\Controllers\UserController;
+use App\Http\Controllers\CategoryController;
 
 
 
@@ -57,6 +58,11 @@ Route::middleware('auth')->group(function () {
     // Users
     Route::resource('users', UserController::class);
 
+    //Categories
+    Route::resource('categories', CategoryController::class);
+
+    // Route pour obtenir les cours d'une catégorie
+    Route::get('categories/{id}/courses', [CategoryController::class, 'getCourses']);
 
 });
 

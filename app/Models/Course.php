@@ -14,6 +14,7 @@ class Course extends Model
         'startdate',
         'enddate',
         'teacher_id',
+        'category_id',
     ];
 
     protected $casts = [
@@ -29,5 +30,10 @@ class Course extends Model
     public function sections()
     {
         return $this->hasMany(Section::class);
+    }
+
+    public function category()
+    {
+        return $this->belongsTo(Category::class);
     }
 }
