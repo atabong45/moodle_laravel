@@ -27,6 +27,53 @@
         <section class="w-full">
         </section>
     </div>
-    
+
 </div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    var infoPanelToggles = document.querySelectorAll('.info-panel-toggle');
+    var infoPanelIcons = document.querySelectorAll('.info-panel-icon');
+    var infoPanelContents = document.querySelectorAll('.info-panel-content');
+
+    infoPanelToggles.forEach(function(toggle, index) {
+        toggle.addEventListener('click', function() {
+            infoPanelContents[index].classList.toggle('hidden');
+            infoPanelIcons[index].classList.add('{{ $iconActiveClasses }}');
+        });
+    });
+});
+
+document.addEventListener('DOMContentLoaded', function () {
+    var addSectionBtn = document.getElementById('add-section-btn');
+    var addSectionForm = document.getElementById('add-section-form');
+
+    addSectionBtn.addEventListener('click', function () {
+        addSectionBtn.style.display = 'none';
+        addSectionForm.style.display = 'block';
+    });
+
+    var accordionButtons = document.querySelectorAll('.accordion-button');
+
+    accordionButtons.forEach(function (button) {
+        button.addEventListener('click', function () {
+            var icon = this.querySelector('i');
+            var target = this.getAttribute('data-target');
+            var targetElement = document.querySelector(target);
+
+            targetElement.addEventListener('shown.bs.collapse', function () {
+                icon.classList.add('{{ $iconActiveClasses }}');
+            });
+
+            targetElement.addEventListener('hidden.bs.collapse', function () {
+                icon.classList.remove('{{ $iconActiveClasses }}');
+            });
+        });
+    });
+});
+</script>
+
+<!-- Include Font Awesome for icons -->
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
+
 @endsection
