@@ -21,6 +21,7 @@
         <!-- Barre de navigation -->
         @include('layouts.navigation')
 
+
         <!-- En-tête -->
         @if (isset($header))
             <header class="bg-white shadow">

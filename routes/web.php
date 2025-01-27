@@ -50,10 +50,13 @@ Route::middleware('auth')->group(function () {
 
     //modules
     Route::resource('modules', ModuleController::class);
+    Route::get('/modules/download/{module}', [ModuleController::class, 'download'])->name('modules.download');
 
     // Sections
     Route::resource('sections', SectionController::class);
 
+    Route::get('/sections/create_for_teacher/{course_id}', [SectionController::class, 'create_for_teacher'])->name('sections.create');
+    Route::post('/sections/store_for_teacher/', [SectionController::class, 'store_for_teacher'])->name('sections.store');
     // Submissions
     Route::resource('submissions', SubmissionController::class);
 
