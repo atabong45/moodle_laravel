@@ -1,4 +1,5 @@
 <button 
+    id="{{ $id ?? '' }}"
     type="{{ $type ?? '' }}"
     class="rounded-md py-2 px-4
         {{ isset($full) && $full === 'true' 

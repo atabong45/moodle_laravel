@@ -8,16 +8,16 @@ use Illuminate\Http\Request;
 
 class SectionController extends Controller
 {
-    public function index()
+    public function index(Course $course)
     {
-        $sections = Section::with('course')->get();
+        $sections = $course->sections();
         return view('sections.index', compact('sections'));
     }
 
-    public function create()
+    public function create(Course $course)
     {
         $courses = Course::all();
-        return view('sections.create', compact('courses'));
+        return view('sections.create', compact('course', 'courses'));
     }
 
     public function store(Request $request)
@@ -31,10 +31,14 @@ class SectionController extends Controller
         return redirect()->route('sections.index')->with('success', 'Section created successfully.');
     }
 
-    public function show(Section $section)
+    public function show(Course $course, Section $section)
     {
         $section->load('course', 'modules');
-        return view('sections.show', compact('section'));
+        
+        $sections = $course->sections();
+        $selectedSection = $section;
+
+        return view('sections.show', compact('course', 'sections', 'selectedSection'));
     }
 
     public function edit(Section $section)

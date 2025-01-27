@@ -11,8 +11,6 @@ use App\Http\Controllers\SectionController;
 use App\Http\Controllers\SubmissionController;
 use App\Http\Controllers\UserController;
 
-
-
 // Welcome route (accessible sans authentification)
 Route::get('/', function () {
     return view('welcome');
@@ -20,15 +18,18 @@ Route::get('/', function () {
 
 // Group of routes requiring authentication
 Route::middleware('auth')->group(function () {
+
     // Dashboard
     Route::get('/dashboard', function () {
         return view('dashboard');
     })->middleware(['verified'])->name('dashboard');
 
-    // Profile
-    Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');
-    Route::patch('/profile', [ProfileController::class, 'update'])->name('profile.update');
-    Route::delete('/profile', [ProfileController::class, 'destroy'])->name('profile.destroy');
+    // Profile management
+    Route::prefix('profile')->group(function () {
+        Route::get('/', [ProfileController::class, 'edit'])->name('profile.edit');
+        Route::patch('/', [ProfileController::class, 'update'])->name('profile.update');
+        Route::delete('/', [ProfileController::class, 'destroy'])->name('profile.destroy');
+    });
 
     // Administration (requires ROLE_ADMIN)
     Route::prefix('admin')->middleware('role:ROLE_ADMIN')->group(function () {
@@ -40,24 +41,30 @@ Route::middleware('auth')->group(function () {
     Route::resource('assignments', AssignmentController::class);
 
     // Courses
-    Route::resource('courses', CourseController::class)->middleware('auth');
+    Route::resource('courses', CourseController::class);
 
-    //grades
+    // Grades
     Route::resource('grades', GradeController::class);
 
-    //modules
+    // Modules
     Route::resource('modules', ModuleController::class);
 
-    // Sections
-    Route::resource('sections', SectionController::class);
+    // Sections (nested under courses)
+    Route::prefix('courses/{course}')->group(function () {
+        Route::get('/sections', [SectionController::class, 'index'])->name('sections.index'); // List all sections of a course
+        Route::get('/sections/create', [SectionController::class, 'create'])->name('sections.create'); // Form to create a section
+        Route::post('/sections', [SectionController::class, 'store'])->name('sections.store'); // Store a new section
+        Route::get('/sections/{section}', [SectionController::class, 'show'])->name('sections.show'); // Show a specific section
+        Route::get('/sections/{section}/edit', [SectionController::class, 'edit'])->name('sections.edit'); // Form to edit a section
+        Route::patch('/sections/{section}', [SectionController::class, 'update'])->name('sections.update'); // Update a section
+        Route::delete('/sections/{section}', [SectionController::class, 'destroy'])->name('sections.destroy'); // Delete a section
+    });
 
     // Submissions
     Route::resource('submissions', SubmissionController::class);
 
     // Users
     Route::resource('users', UserController::class);
-
-
 });
 
 // Include authentication routes

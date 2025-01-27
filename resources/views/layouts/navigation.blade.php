@@ -21,9 +21,11 @@
                     <x-nav-link :href="route('modules.index')" :active="request()->routeIs('modules.index')">
                         {{ __('Modules') }}
                     </x-nav-link>
-                    <x-nav-link :href="route('sections.index')" :active="request()->routeIs('sections.index')">
+                    
+                    <x-nav-link :href="route('sections.index', $course)" :active="request()->routeIs('sections.index')">
                         {{ __('Sections') }}
                     </x-nav-link>
+                    
                     <x-nav-link :href="route('assignments.index')" :active="request()->routeIs('assignments.index')">
                         {{ __('Évaluations') }}
                     </x-nav-link>
@@ -91,7 +93,7 @@
             <x-responsive-nav-link :href="route('modules.index')" :active="request()->routeIs('modules.index')">
                 {{ __('Modules') }}
             </x-responsive-nav-link>
-            <x-responsive-nav-link :href="route('sections.index')" :active="request()->routeIs('sections.index')">
+            <x-responsive-nav-link :href="route('sections.index', '$course')" :active="request()->routeIs('sections.index')">
                 {{ __('Sections') }}
             </x-responsive-nav-link>
             <x-responsive-nav-link :href="route('assignments.index')" :active="request()->routeIs('assignments.index')">

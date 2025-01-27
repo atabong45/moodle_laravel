@@ -23,22 +23,24 @@ class CourseController extends Controller
     public function index(Request $request)
     {
         $search = $request->get('search'); // To filter by name
+        
         // Fetch courses from Moodle
         $moodleCourses = $this->moodleCourseService->getAllCourses();
-            // Optionally, save Moodle courses to the local database
-            foreach ($moodleCourses as $moodleCourse) {
+        
+        // Optionally, save Moodle courses to the local database
+        foreach ($moodleCourses as $moodleCourse) {
             Course::updateOrCreate(
-                ['id' => $moodleCourse['id']],
-                [
-                'fullname' => $moodleCourse['fullname'],
-                'shortname' => $moodleCourse['shortname'],
-                'summary' => $moodleCourse['summary'],
-                'numsections' => $moodleCourse['numsections'],
-                'startdate' => $moodleCourse['startdate'] == 0 ? now() : $moodleCourse['startdate'],
-                'enddate' => $moodleCourse['enddate'] == 0 ? now() : $moodleCourse['enddate'],
+                [   
+                    'id' => $moodleCourse['id'],
+                    'fullname' => $moodleCourse['fullname'],
+                    'shortname' => $moodleCourse['shortname'],
+                    'summary' => $moodleCourse['summary'],
+                    'numsections' => $moodleCourse['numsections'],
+                    'startdate' => $moodleCourse['startdate'] == 0 ? now() : $moodleCourse['startdate'],
+                    'enddate' => $moodleCourse['enddate'] == 0 ? now() : $moodleCourse['enddate'],
                 ]
-                );  
-    }
+            );  
+        }
 
         $courses = Course::when($search, function ($query, $search) {
             return $query->where('fullname', 'like', '%' . $search . '%');
@@ -84,7 +86,9 @@ class CourseController extends Controller
 
     public function show(Course $course)
     {
-        return view('courses.show', compact('course'));
+        $sections = $course->sections();
+
+        return view('courses.show', compact('course', 'sections'));
     }
 
     public function edit(Course $course)

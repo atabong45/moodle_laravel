@@ -1,19 +1,32 @@
 @extends('layouts.app')
 
 @section('content')
-<div class="container">
-    <h1>Détails du cours</h1>
-    <div class="card">
-        <div class="card-body">
-            <h5 class="card-title">{{ $course->fullname }}</h5>
-            <p class="card-text"><strong>Nom court :</strong> {{ $course->shortname }}</p>
-            <p class="card-text"><strong>Résumé :</strong> {{ $course->summary }}</p>
-            <p class="card-text"><strong>Nombre de sections :</strong> {{ $course->numsections }}</p>
-            <p class="card-text"><strong>Date de début :</strong> {{ $course->startdate->format('d/m/Y') }}</p>
-            <p class="card-text"><strong>Date de fin :</strong> {{ $course->enddate ? $course->enddate->format('d/m/Y') : 'Non défini' }}</p>
-            <p class="card-text"><strong>Enseignant :</strong> {{ $course->teacher->username }}</p>
-        </div>
+<div class="container w-4/5 mt-10 mx-auto flex flex-col justify-center">
+    <h1 class='text-2xl font-bold'><span class="text-primary text-3xl">{{ $course->fullname }}</span> Course</h1>
+    <hr class="w-full h-[2px] mt-2 mb-4 bg-black" />
+    <div class='flex w-full justify-between'>
+        <section class="w-1/5">
+            <h2 class="text-xl text-primary font-bold border-b-2 border-primary pb-1 mb-2">Sections ({{ $sections->count() }})</h2>
+            <ul class="flex flex-col pl-2 divide-y divide-black">
+                @foreach($sections as $section)
+                    <li class="hover:cursor-pointer hover:font-bold hover:text-primary py-1">
+                        <a href="route('sections.show', $course, $section)">
+                            <span class="inline-block w-3 text-center">{{ $loop->iteration }}</span>: $section->name
+                        </a>
+                    </li>
+                @endforeach
+            </ul>
+            <div class='flex w-full'>
+                <a class="cursor-pointer" href="{{ route('sections.create', $course) }}">
+                    <x-button full='true' class="mt-10">
+                        Add Section
+                    </x-button>
+                </a>
+            </div>
+        </section>
+        <section class="w-full">
+        </section>
     </div>
-    <a href="{{ route('courses.index') }}" class="btn btn-primary mt-3">Retour à la liste</a>
+    
 </div>
 @endsection
