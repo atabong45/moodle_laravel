@@ -12,7 +12,7 @@ return new class extends Migration
     public function up()
     {
         Schema::table('users', function (Blueprint $table) {
-            $table->json('roles'); 
+        
             $table->string('profile_picture')->nullable(); 
         });
     }

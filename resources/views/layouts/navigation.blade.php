@@ -12,26 +12,27 @@
 
                 <!-- Navigation Links -->
                 <div class="hidden space-x-8 sm:-my-px sm:ms-10 sm:flex">
-                    <x-nav-link :href="route('dashboard')" :active="request()->routeIs('dashboard')">
-                        {{ __('Dashboard') }}
-                    </x-nav-link>
                     <x-nav-link :href="route('courses.index')" :active="request()->routeIs('courses.index')">
                         {{ __('Cours') }}
                     </x-nav-link>
                     <x-nav-link :href="route('modules.index')" :active="request()->routeIs('modules.index')">
                         {{ __('Modules') }}
                     </x-nav-link>
-                    
-                    <x-nav-link :href="route('sections.index', $course)" :active="request()->routeIs('sections.index')">
-                        {{ __('Sections') }}
-                    </x-nav-link>
-                    
                     <x-nav-link :href="route('assignments.index')" :active="request()->routeIs('assignments.index')">
                         {{ __('Évaluations') }}
                     </x-nav-link>
-                    <x-nav-link :href="route('profile.edit')" :active="request()->routeIs('profile.edit')">
-                        {{ __('Profil') }}
+                    <x-nav-link :href="route('dashboard')" :active="request()->routeIs('dashboard')">
+                        {{ __('Tableau de bord') }}
                     </x-nav-link>
+                    
+                    <!-- Admin Navigation -->
+                    @role('ROLE_ADMIN')
+                    <div class="hidden space-x-8 sm:-my-px sm:ml-10 sm:flex">
+                        <x-nav-link :href="route('admin.users.index')" :active="request()->routeIs('admin.users.*')">
+                            {{ __('Gestion des Utilisateurs') }}
+                        </x-nav-link>
+                    </div>
+                    @endrole
                 </div>
             </div>
 
@@ -84,24 +85,23 @@
     <!-- Responsive Navigation Menu -->
     <div :class="{'block': open, 'hidden': ! open}" class="hidden sm:hidden">
         <div class="pt-2 pb-3 space-y-1">
-            <x-responsive-nav-link :href="route('dashboard')" :active="request()->routeIs('dashboard')">
-                {{ __('Dashboard') }}
-            </x-responsive-nav-link>
             <x-responsive-nav-link :href="route('courses.index')" :active="request()->routeIs('courses.index')">
                 {{ __('Cours') }}
-            </x-responsive-nav-link>
-            <x-responsive-nav-link :href="route('modules.index')" :active="request()->routeIs('modules.index')">
-                {{ __('Modules') }}
-            </x-responsive-nav-link>
-            <x-responsive-nav-link :href="route('sections.index', '$course')" :active="request()->routeIs('sections.index')">
-                {{ __('Sections') }}
             </x-responsive-nav-link>
             <x-responsive-nav-link :href="route('assignments.index')" :active="request()->routeIs('assignments.index')">
                 {{ __('Évaluations') }}
             </x-responsive-nav-link>
-            <x-responsive-nav-link :href="route('profile.edit')" :active="request()->routeIs('profile.edit')">
-                {{ __('Profil') }}
+            <x-responsive-nav-link :href="route('dashboard')" :active="request()->routeIs('dashboard')">
+                {{ __('Dashboard') }}
             </x-responsive-nav-link>
+            <!-- Admin Navigation -->
+            @role('ROLE_ADMIN')
+            <div class="hidden space-x-8 sm:-my-px sm:ml-10 sm:flex">
+                <x-responsive-nav-link :href="route('admin.users.index')" :active="request()->routeIs('admin.users.*')">
+                    {{ __('Gestion des Utilisateurs') }}
+                </x-responsive-nav-link>
+            </div>
+            @endrole
         </div>
 
         <!-- Responsive Settings Options -->

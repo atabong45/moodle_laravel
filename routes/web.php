@@ -10,6 +10,9 @@ use App\Http\Controllers\ModuleController;
 use App\Http\Controllers\SectionController;
 use App\Http\Controllers\SubmissionController;
 use App\Http\Controllers\UserController;
+use App\Http\Controllers\CategoryController;
+
+
 
 // Welcome route (accessible sans authentification)
 Route::get('/', function () {
@@ -65,7 +68,26 @@ Route::middleware('auth')->group(function () {
 
     // Users
     Route::resource('users', UserController::class);
+
+    //Categories
+    Route::resource('categories', CategoryController::class);
+
+    // Route pour obtenir les cours d'une catégorie
+    Route::get('categories/{id}/courses', [CategoryController::class, 'getCourses']);
+
+       // Routes pour les administrateurs
+       Route::middleware(['auth', 'role:ROLE_ADMIN'])->group(function () {
+        Route::get('/admin/users', [AdminController::class, 'index'])->name('admin.users.index');
+        Route::get('/admin/users/create', [AdminController::class, 'create'])->name('admin.users.create');
+        Route::post('/admin/users', [AdminController::class, 'store'])->name('admin.users.store');
+        Route::get('/admin/users/{user}/edit', [AdminController::class, 'edit'])->name('admin.users.edit');
+        Route::put('/admin/users/{user}', [AdminController::class, 'update'])->name('admin.users.update');
+        Route::delete('/admin/users/{user}', [AdminController::class, 'destroy'])->name('admin.users.destroy');
+    });
+
 });
+
+
 
 // Include authentication routes
 require __DIR__.'/auth.php';

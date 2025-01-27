@@ -1,22 +1,37 @@
 <?php
-
 namespace Database\Seeders;
 
 use App\Models\User;
 use Illuminate\Database\Seeder;
 use Illuminate\Support\Facades\Hash;
+use Spatie\Permission\Models\Role;
 
 class AdminUserSeeder extends Seeder
 {
     public function run()
     {
-        $admin = User::create([
-            'name' => 'Admin',
-            'email' => 'admin@admin.com',
-            'password' => Hash::make('admin12345'),
-            'roles' => ['ROLE_USER','ROLE_ADMIN']
-        ]);
+        // Créer ou récupérer l'utilisateur administrateur
+        $admin = User::firstOrCreate(
+            [
+                'email' => 'admin@admin.com',
+            ],
+            [
+                'name' => 'admin',
+                'password' => Hash::make('admin12345'), // Mot de passe sécurisé
+            ]
+        );
 
-        
+        // Assigner les rôles existants à l'utilisateur
+        $roles = ['ROLE_ADMIN', 'ROLE_USER'];
+
+        foreach ($roles as $roleName) {
+            $role = Role::where('name', $roleName)->first();
+
+            if ($role) {
+                $admin->assignRole($roleName);
+            } else {
+                $this->command->error("Role '{$roleName}' not found. Did you forget to seed the roles?");
+            }
+        }
     }
 }

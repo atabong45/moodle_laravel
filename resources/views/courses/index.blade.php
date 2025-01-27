@@ -28,7 +28,7 @@
         </form>
     </div>
 
-    
+
     <h2 class='text-2xl font-bold'>Overview</h2>
     <hr class="w-3/5 h-[3px] mb-4 bg-black" />
     <div class='flex flex-col gap-4 pl-2'>
