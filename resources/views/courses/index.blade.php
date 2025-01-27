@@ -28,20 +28,20 @@
         </form>
     </div>
 
-    
+
     <h2 class='text-2xl font-bold'>Overview</h2>
     <hr class="w-3/5 h-[3px] mb-4 bg-black" />
     <div class='flex flex-col gap-4 pl-2'>
-        <div>
-            <h3 class='text-xl border-l-2 border-primary text-primary pl-2 mb-2'>Science</h3>
+        <div class="mb-4">
+            <h3 class='text-xl text-primary mb-2'>{{ strtoupper('Science') }}</h3>
             <div class="grid grid-cols-4 gap-4">
                 @foreach($courses as $course)
                     <x-course :course="$course"/>
                 @endforeach
             </div>
         </div>
-        <div>
-            <h3 class='text-xl border-l-2 border-primary text-primary pl-2 mb-2'>Litterature</h3>
+        <div class="mb-4">
+            <h3 class='text-xl text-primary mb-2'>{{ strtoupper('Litterature') }}</h3>
             <div class="grid grid-cols-4 gap-4">
                 @foreach($courses as $course)
                     <x-course :course="$course"/>

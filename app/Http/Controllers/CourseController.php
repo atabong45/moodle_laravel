@@ -38,7 +38,7 @@ class CourseController extends Controller
     //             'startdate' => $moodleCourse['startdate'] == 0 ? now() : $moodleCourse['startdate'],
     //             'enddate' => $moodleCourse['enddate'] == 0 ? now() : $moodleCourse['enddate'],
     //             ]
-    //             );  
+    //             );
     // }
 
     //     $courses = Course::when($search, function ($query, $search) {
@@ -87,7 +87,7 @@ class CourseController extends Controller
                     // Utilisez Storage pour supprimer l'ancienne image
                     Storage::disk('public')->delete($course->profile_picture);
                 }
-        
+
                 // Enregistrer la nouvelle photo
                 $path = $request->file('image')->store('courses_images', 'public');
                 $course->profile_picture = $path;
@@ -100,8 +100,9 @@ class CourseController extends Controller
 
     public function show(Course $course)
     {
-        $course->load('sections.modules');
-        return view('courses.show', compact('course'));
+        $sections = $course->sections();
+
+        return view('courses.show', compact('course', 'sections'));
     }
 
     public function edit(Course $course)
@@ -129,7 +130,7 @@ class CourseController extends Controller
                 // Utilisez Storage pour supprimer l'ancienne image
                 Storage::disk('public')->delete($course->profile_picture);
             }
-    
+
             // Enregistrer la nouvelle photo
             $path = $request->file('image')->store('courses_images', 'public');
             $course->profile_picture = $path;

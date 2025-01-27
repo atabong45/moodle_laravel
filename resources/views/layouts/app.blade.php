@@ -21,7 +21,6 @@
         <!-- Barre de navigation -->
         @include('layouts.navigation')
 
-
         <!-- En-tête -->
         @if (isset($header))
             <header class="bg-white shadow">
@@ -34,6 +33,8 @@
         <!-- Contenu principal -->
         <main class="py-8">
             @yield('content')
+
+            @yield('script')
         </main>
     </div>
 </body>

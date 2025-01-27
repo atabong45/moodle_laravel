@@ -15,12 +15,16 @@
                     <x-nav-link :href="route('courses.index')" :active="request()->routeIs('courses.index')">
                         {{ __('Cours') }}
                     </x-nav-link>
+                    <x-nav-link :href="route('modules.index')" :active="request()->routeIs('modules.index')">
+                        {{ __('Modules') }}
+                    </x-nav-link>
                     <x-nav-link :href="route('assignments.index')" :active="request()->routeIs('assignments.index')">
                         {{ __('Évaluations') }}
                     </x-nav-link>
                     <x-nav-link :href="route('dashboard')" :active="request()->routeIs('dashboard')">
                         {{ __('Tableau de bord') }}
                     </x-nav-link>
+                    
                     <!-- Admin Navigation -->
                     @role('ROLE_ADMIN')
                     <div class="hidden space-x-8 sm:-my-px sm:ml-10 sm:flex">
