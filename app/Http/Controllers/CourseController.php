@@ -45,7 +45,7 @@ class CourseController extends Controller
     //         return $query->where('fullname', 'like', '%' . $search . '%');
     //     })->with('teacher')->get();
 
-        $courses = Course::with('courses.sections.modules')->get();
+        $courses = Course::all();
 
         return view('courses.index', compact('courses'));
     }

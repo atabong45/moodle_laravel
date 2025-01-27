@@ -11,6 +11,8 @@ use App\Http\Controllers\SectionController;
 use App\Http\Controllers\SubmissionController;
 use App\Http\Controllers\UserController;
 use App\Http\Controllers\CategoryController;
+use App\Http\Controllers\QuestionController;
+
 
 
 
@@ -73,6 +75,10 @@ Route::middleware('auth')->group(function () {
         Route::put('/admin/users/{user}', [AdminController::class, 'update'])->name('admin.users.update');
         Route::delete('/admin/users/{user}', [AdminController::class, 'destroy'])->name('admin.users.destroy');
     });
+
+    // Routes pour les questions
+    Route::resource('/questions', QuestionController::class);
+
 
 });
 

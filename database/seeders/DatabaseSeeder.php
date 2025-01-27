@@ -19,6 +19,14 @@ class DatabaseSeeder extends Seeder
         // Ensuite, appeler le seeder de l'administrateur
         $this->call(AdminUserSeeder::class);
 
+        $this->call(UsersSeeder::class);
+
+        $this->call(CategoriesTableSeeder::class);
+
+        $this->call(CoursesTableSeeder::class);
+
+        $this->call(QuestionsTableSeeder::class);
+
         
     }
 }
