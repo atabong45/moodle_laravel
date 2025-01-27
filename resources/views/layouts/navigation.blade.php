@@ -21,6 +21,14 @@
                     <x-nav-link :href="route('dashboard')" :active="request()->routeIs('dashboard')">
                         {{ __('Tableau de bord') }}
                     </x-nav-link>
+                    <!-- Admin Navigation -->
+                    @role('ROLE_ADMIN')
+                    <div class="hidden space-x-8 sm:-my-px sm:ml-10 sm:flex">
+                        <x-nav-link :href="route('admin.users.index')" :active="request()->routeIs('admin.users.*')">
+                            {{ __('Gestion des Utilisateurs') }}
+                        </x-nav-link>
+                    </div>
+                    @endrole
                 </div>
             </div>
 
@@ -82,6 +90,14 @@
             <x-responsive-nav-link :href="route('dashboard')" :active="request()->routeIs('dashboard')">
                 {{ __('Dashboard') }}
             </x-responsive-nav-link>
+            <!-- Admin Navigation -->
+            @role('ROLE_ADMIN')
+            <div class="hidden space-x-8 sm:-my-px sm:ml-10 sm:flex">
+                <x-responsive-nav-link :href="route('admin.users.index')" :active="request()->routeIs('admin.users.*')">
+                    {{ __('Gestion des Utilisateurs') }}
+                </x-responsive-nav-link>
+            </div>
+            @endrole
         </div>
 
         <!-- Responsive Settings Options -->
