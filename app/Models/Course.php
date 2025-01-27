@@ -15,6 +15,7 @@ class Course extends Model
         'enddate',
         'teacher_id',
         'category_id',
+        'image',
     ];
 
     protected $casts = [
@@ -35,5 +36,9 @@ class Course extends Model
     public function category()
     {
         return $this->belongsTo(Category::class);
+    }
+
+    public function modules(){
+        return $this->hasMany(Module::class);
     }
 }
