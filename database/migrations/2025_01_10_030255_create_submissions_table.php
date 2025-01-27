@@ -13,7 +13,7 @@ return new class extends Migration
     {
         Schema::create('submissions', function (Blueprint $table) {
             $table->id();
-            $table->string('status');
+            $table->enum('status', ['pending', 'corrected'])->default('pending');
             $table->string('file_path');
             $table->foreignId('assignment_id')->constrained()->onDelete('cascade');
             $table->foreignId('student_id')->constrained('users')->onDelete('cascade');

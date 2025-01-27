@@ -1,7 +1,9 @@
-<x-app-layout>
+@extends('layouts.app')
+
+@section('content')
     <x-slot name="header">
         <h2 class="text-xl font-semibold leading-tight text-gray-800">
-            {{ __('Modifier un Utilisateur') }}
+            {{ __('Modifier l\'Utilisateur') }}
         </h2>
     </x-slot>
 
@@ -13,10 +15,10 @@
                         @csrf
                         @method('PUT')
 
-                        <!-- Name -->
+                        <!-- Nom -->
                         <div class="mt-4">
                             <x-input-label for="name" :value="__('Nom')" />
-                            <x-text-input id="name" class="block w-full mt-1" type="text" name="name" :value="old('name', $user->name)" required />
+                            <x-text-input id="name" class="block w-full mt-1" type="text" name="name" :value="old('name', $user->name)" required autofocus />
                             <x-input-error :messages="$errors->get('name')" class="mt-2" />
                         </div>
 
@@ -27,32 +29,20 @@
                             <x-input-error :messages="$errors->get('email')" class="mt-2" />
                         </div>
 
-                        <!-- Password -->
+                        <!-- Rôles (Sélection multiple) -->
                         <div class="mt-4">
-                            <x-input-label for="password" :value="__('Nouveau mot de passe (optionnel)')" />
-                            <x-text-input id="password" class="block w-full mt-1" type="password" name="password" />
-                            <x-input-error :messages="$errors->get('password')" class="mt-2" />
-                        </div>
-
-                        <!-- Confirm Password -->
-                        <div class="mt-4">
-                            <x-input-label for="password_confirmation" :value="__('Confirmer le mot de passe')" />
-                            <x-text-input id="password_confirmation" class="block w-full mt-1" type="password" name="password_confirmation" />
-                        </div>
-
-                        <!-- Role -->
-                        <div class="mt-4">
-                            <x-input-label for="role" :value="__('Rôle')" />
-                            <select name="role" id="role" class="block w-full mt-1 rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500">
-                                @foreach ($roles as $role)
-                                    <option value="{{ $role->name }}" {{ in_array($role->name, $userRoles) ? 'selected' : '' }}>
-                                        {{ $role->name }}
-                                    </option>
-                                @endforeach
+                            <x-input-label for="roles" :value="__('Rôles')" />
+                            <select name="roles[]" id="roles" class="block w-full mt-1 rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500" multiple>
+                                <option value="ROLE_USER" {{ in_array('ROLE_USER', $user->roles->pluck('name')->toArray()) ? 'selected' : '' }}>Utilisateur</option>
+                                <option value="ROLE_STUDENT" {{ in_array('ROLE_STUDENT', $user->roles->pluck('name')->toArray()) ? 'selected' : '' }}>Élève</option>
+                                <option value="ROLE_TEACHER" {{ in_array('ROLE_TEACHER', $user->roles->pluck('name')->toArray()) ? 'selected' : '' }}>Enseignant</option>
+                                <option value="ROLE_ADMIN" {{ in_array('ROLE_ADMIN', $user->roles->pluck('name')->toArray()) ? 'selected' : '' }}>Administrateur</option>
                             </select>
-                            <x-input-error :messages="$errors->get('role')" class="mt-2" />
+                            <x-input-error :messages="$errors->get('roles')" class="mt-2" />
+                            <p class="mt-1 text-sm text-gray-500">Maintenez <kbd class="px-1 text-xs bg-gray-200 rounded">Ctrl</kbd> (ou <kbd class="px-1 text-xs bg-gray-200 rounded">Cmd</kbd> sur Mac) pour sélectionner plusieurs rôles.</p>
                         </div>
 
+                        <!-- Bouton d'action -->
                         <div class="flex items-center justify-end mt-4">
                             <x-primary-button class="ml-4">
                                 {{ __('Mettre à jour') }}
@@ -63,4 +53,4 @@
             </div>
         </div>
     </div>
-</x-app-layout>
+@endsection

@@ -1,4 +1,6 @@
-<x-app-layout>
+@extends('layouts.app')
+
+@section('content')
     <x-slot name="header">
         <h2 class="text-xl font-semibold leading-tight text-gray-800">
             {{ __('Créer un Utilisateur') }}
@@ -12,7 +14,7 @@
                     <form method="POST" action="{{ route('admin.users.store') }}">
                         @csrf
 
-                        <!-- Name -->
+                        <!-- Nom -->
                         <div class="mt-4">
                             <x-input-label for="name" :value="__('Nom')" />
                             <x-text-input id="name" class="block w-full mt-1" type="text" name="name" :value="old('name')" required autofocus />
@@ -26,30 +28,33 @@
                             <x-input-error :messages="$errors->get('email')" class="mt-2" />
                         </div>
 
-                        <!-- Password -->
+                        <!-- Mot de passe -->
                         <div class="mt-4">
                             <x-input-label for="password" :value="__('Mot de passe')" />
                             <x-text-input id="password" class="block w-full mt-1" type="password" name="password" required />
                             <x-input-error :messages="$errors->get('password')" class="mt-2" />
                         </div>
 
-                        <!-- Confirm Password -->
+                        <!-- Confirmation du mot de passe -->
                         <div class="mt-4">
                             <x-input-label for="password_confirmation" :value="__('Confirmer le mot de passe')" />
                             <x-text-input id="password_confirmation" class="block w-full mt-1" type="password" name="password_confirmation" required />
                         </div>
 
-                        <!-- Role -->
+                        <!-- Rôles (Sélection multiple) -->
                         <div class="mt-4">
-                            <x-input-label for="role" :value="__('Rôle')" />
-                            <select name="role" id="role" class="block w-full mt-1 rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500">
-                                @foreach ($roles as $role)
-                                    <option value="{{ $role->name }}">{{ $role->name }}</option>
-                                @endforeach
+                            <x-input-label for="roles" :value="__('Rôles')" />
+                            <select name="roles[]" id="roles" class="block w-full mt-1 rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500" multiple>
+                                <option value="ROLE_USER">Utilisateur</option>
+                                <option value="ROLE_STUDENT">Élève</option>
+                                <option value="ROLE_TEACHER">Enseignant</option>
+                                <option value="ROLE_ADMIN">Administrateur</option>
                             </select>
-                            <x-input-error :messages="$errors->get('role')" class="mt-2" />
+                            <x-input-error :messages="$errors->get('roles')" class="mt-2" />
+                            <p class="mt-1 text-sm text-gray-500">Maintenez <kbd class="px-1 text-xs bg-gray-200 rounded">Ctrl</kbd> (ou <kbd class="px-1 text-xs bg-gray-200 rounded">Cmd</kbd> sur Mac) pour sélectionner plusieurs rôles.</p>
                         </div>
 
+                        <!-- Bouton d'action -->
                         <div class="flex items-center justify-end mt-4">
                             <x-primary-button class="ml-4">
                                 {{ __('Créer') }}
@@ -60,4 +65,4 @@
             </div>
         </div>
     </div>
-</x-app-layout>
+@endsection
