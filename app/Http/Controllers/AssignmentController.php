@@ -4,15 +4,18 @@ namespace App\Http\Controllers;
 
 use App\Models\Assignment;
 use App\Models\Module;
+use App\Models\Submission;
 use Illuminate\Http\Request;
 
 class AssignmentController extends Controller
 {
     public function index()
-    {
-        $assignments = Assignment::with('module')->get();
-        return view('assignments.index', compact('assignments'));
-    }
+{
+    $assignments = Assignment::with('module')->get(); // Inclure les modules associés pour chaque évaluation
+    $submissions = Submission::with(['assignment', 'student', 'grade'])->get(); // Inclure les relations nécessaires
+    return view('assignments.index', compact('assignments', 'submissions'));
+}
+
 
     public function create()
     {

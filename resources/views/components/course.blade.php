@@ -7,7 +7,7 @@
             <div class="font-bold text-xl flex justify-between">
                 <span>{{ $course->fullname ?? 'No name' }}</span>
             </div>
-            <div class="italic text-base">{{ $course->category ?? 'No category' }}</div>
+            <div class="italic text-base">{{ $course->category->name ?? 'No category' }}</div>
         </div>
     </a>
 </div>

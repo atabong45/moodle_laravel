@@ -3,36 +3,39 @@
 namespace Database\Seeders;
 
 use App\Models\Assignment;
-use App\Models\Module;
 use Illuminate\Database\Seeder;
-use Carbon\Carbon;
+use Illuminate\Support\Carbon;
 
 class AssignmentsTableSeeder extends Seeder
 {
     public function run()
     {
-        // Récupérer tous les modules existants
-        $modules = Module::all();
+        // Création de 3 évaluations
+        $assignments = [
+            [
+                'name' => 'Évaluation 1',
+                'duedate' => Carbon::now()->addDays(10),
+                'attemptnumber' => 3,
+                'module_id' => 1,
+            ],
+            [
+                'name' => 'Évaluation 2',
+                'duedate' => Carbon::now()->addDays(15),
+                'attemptnumber' => 2,
+                'module_id' => 2,
+            ],
+            [
+                'name' => 'Évaluation 3',
+                'duedate' => Carbon::now()->addDays(20),
+                'attemptnumber' => 1,
+                'module_id' => 3,
+            ],
+        ];
 
-        // Assurez-vous qu'il y a des modules dans la base de données avant de procéder
-        if ($modules->isEmpty()) {
-            $this->command->error('Aucun module trouvé dans la base de données!');
-            return;
+        foreach ($assignments as $data) {
+            Assignment::create($data);
         }
 
-        // Créer 5 assignments pour chaque module
-        foreach ($modules as $module) {
-            // Créer 5 assignments pour chaque module
-            for ($i = 1; $i <= 5; $i++) {
-                Assignment::create([
-                    'name' => "Assignment $i - " . $module->name,
-                    'duedate' => Carbon::now()->addDays(rand(1, 30)), // Date d'échéance aléatoire entre 1 et 30 jours
-                    'attemptnumber' => 1, // Pour l'instant, nous définissons un seul essai
-                    'module_id' => $module->id, // Assignation du module
-                ]);
-            }
-        }
-
-        $this->command->info('Assignments ajoutés avec succès.');
+        $this->command->info('3 évaluations ont été ajoutées avec succès.');
     }
 }

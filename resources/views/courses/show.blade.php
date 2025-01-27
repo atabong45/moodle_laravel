@@ -61,9 +61,9 @@ document.addEventListener('DOMContentLoaded', function () {
             var target = this.getAttribute('data-target');
             var targetElement = document.querySelector(target);
 
-            targetElement.addEventListener('shown.bs.collapse', function () {
-                icon.classList.add('{{ $iconActiveClasses }}');
-            });
+            // targetElement.addEventListener('shown.bs.collapse', function () {
+            //     icon.classList.add('{{ $iconActiveClasses }}');
+            // });
 
             targetElement.addEventListener('hidden.bs.collapse', function () {
                 icon.classList.remove('{{ $iconActiveClasses }}');

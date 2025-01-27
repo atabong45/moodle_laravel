@@ -19,6 +19,7 @@ class CoursesTableSeeder extends Seeder
                 'shortname' => 'INFO101',
                 'summary' => 'Ce cours couvre les bases de l\'informatique, y compris les systèmes d\'exploitation, les réseaux et la programmation.',
                 'numsections' => 3,
+                'category_id' => 5,
                 'startdate' => now(),
                 'enddate' => now()->addMonths(4),
                 'teacher_id' => User::role('ROLE_TEACHER')->first()->id, // Utilisation de Spatie
@@ -28,6 +29,7 @@ class CoursesTableSeeder extends Seeder
                 'shortname' => 'MATH101',
                 'summary' => 'Ce cours propose une introduction aux mathématiques appliquées dans le contexte des sciences sociales.',
                 'numsections' => 3,
+                'category_id' => 1,
                 'startdate' => now(),
                 'enddate' => now()->addMonths(4),
                 'teacher_id' => User::role('ROLE_TEACHER')->first()->id, // Utilisation de Spatie
@@ -37,6 +39,7 @@ class CoursesTableSeeder extends Seeder
                 'shortname' => 'BIO101',
                 'summary' => 'Le cours couvre les concepts fondamentaux de la biologie cellulaire et moléculaire, y compris la génétique et la biologie des cellules.',
                 'numsections' => 3,
+                'category_id' => 2,
                 'startdate' => now(),
                 'enddate' => now()->addMonths(4),
                 'teacher_id' => User::role('ROLE_TEACHER')->first()->id, // Utilisation de Spatie
@@ -46,6 +49,7 @@ class CoursesTableSeeder extends Seeder
                 'shortname' => 'PHYS101',
                 'summary' => 'Ce cours traite des bases de la physique moderne, y compris la relativité et la mécanique quantique.',
                 'numsections' => 3,
+                'category_id' => 3,
                 'startdate' => now(),
                 'enddate' => now()->addMonths(4),
                 'teacher_id' => User::role('ROLE_TEACHER')->first()->id, // Utilisation de Spatie
@@ -55,6 +59,7 @@ class CoursesTableSeeder extends Seeder
                 'shortname' => 'HIST101',
                 'summary' => 'Introduction à l\'histoire contemporaine, en se concentrant sur les événements majeurs du XXe siècle.',
                 'numsections' => 3,
+                'category_id' => 4,
                 'startdate' => now(),
                 'enddate' => now()->addMonths(4),
                 'teacher_id' => User::role('ROLE_TEACHER')->first()->id, // Utilisation de Spatie

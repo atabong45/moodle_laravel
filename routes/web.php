@@ -19,7 +19,7 @@ use App\Http\Controllers\QuestionController;
 // Welcome route (accessible sans authentification)
 Route::get('/', function () {
     return view('welcome');
-});
+})->name('home');
 
 // Group of routes requiring authentication
 Route::middleware('auth')->group(function () {

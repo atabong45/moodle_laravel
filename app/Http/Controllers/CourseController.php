@@ -101,8 +101,8 @@ class CourseController extends Controller
     public function show(Course $course)
     {
         $sections = $course->sections();
-
-        return view('courses.show', compact('course', 'sections'));
+        $iconActiveClasses = 'text-primary'; 
+        return view('courses.show', compact('course', 'sections', 'iconActiveClasses'));
     }
 
     public function edit(Course $course)
