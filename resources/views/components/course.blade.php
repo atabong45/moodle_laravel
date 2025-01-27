@@ -6,7 +6,10 @@
     </div>
     <div class="h-14 p-2 py-0">
         <div class="font-bold text-xl flex justify-between">
-            <span>{{ $course->fullname ?? 'No name' }}</span>
+            <a href="{{ route('courses.show', $course) }}">
+                <span>{{ $course->fullname ?? 'No name' }}</span>
+            </a>
+ 
             <a href="{{ route('courses.edit', $course) }}" class="text-primary">
                 <i class="fa-solid fa-pen"></i>
             </a>
