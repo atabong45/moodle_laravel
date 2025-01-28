@@ -18,7 +18,7 @@ return new class extends Migration
             $table->integer('attemptnumber');
             $table->boolean('published')->default(false);
             $table->foreignId('module_id')->constrained()->onDelete('cascade');
-            $table->foreignId('created_by')->constrained('users')->onDelete('cascade');
+            $table->foreignId('created_by')->nullable()->constrained('users')->onDelete('cascade');
             $table->timestamps();
         });
     }

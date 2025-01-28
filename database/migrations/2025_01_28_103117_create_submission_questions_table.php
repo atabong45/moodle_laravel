@@ -11,11 +11,13 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('questions', function (Blueprint $table) {
+        Schema::create('submission_questions', function (Blueprint $table) {
             $table->id();
+            $table->foreignId('submission_id')->constrained()->onDelete('cascade');
             $table->text('content')->nullable(); // Le contenu de la question
-            $table->json('choices')->nullable(); // Les propositions sous forme de tableau JSON
+            $table->json('choices')->nullable();; // Les propositions sous forme de tableau JSON
             $table->integer('correct_choice_id')->nullable(); // L'id de la proposition correcte
+            $table->integer('student_answer_id')->nullable(); // L'id de la reponse de l'etudiant 
             $table->timestamps();
         });
     }
@@ -25,6 +27,6 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::dropIfExists('questions');
+        Schema::dropIfExists('submission_questions');
     }
 };

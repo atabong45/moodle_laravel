@@ -6,6 +6,7 @@ use App\Models\Assignment;
 use App\Models\Module;
 use App\Models\Question;
 use App\Models\Submission;
+use App\Models\SubmissionQuestion;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 
@@ -107,17 +108,7 @@ class AssignmentController extends Controller
                         ->with('success', "L'évaluation a été $status avec succès.");
     }
 
-    public function compose(Assignment $assignment)
-    {
-        // Vérifiez que l'utilisateur a les droits nécessaires pour composer
-        if (!!Auth::user()->hasRole('ROLE_STUDENT')) {
-            abort(403, 'Vous n\'êtes pas autorisé à composer cette évaluation.');
-        }
-
-        // Logique pour afficher la page de composition
-        return view('assignments.compose', compact('assignment'));
-    }
-
+    
     // Afficher le formulaire pour modifier toutes les questions d'un assignment
     public function editQuestions(Assignment $assignment)
     {
@@ -156,6 +147,86 @@ class AssignmentController extends Controller
     return redirect()->route('assignments.show', $assignment->id)
                      ->with('success', 'Les questions de l\'évaluation ont été mises à jour.');
 }
+
+        public function compose(Assignment $assignment)
+        {
+            $user = Auth::user();
+
+ 
+            // Vérifiez si l'évaluation contient des questions
+            if (!is_array($assignment->question_ids) || empty($assignment->question_ids)) {
+                return redirect()->back()->with('error', 'Cette évaluation ne contient aucune question.');
+            }
+
+            // Créez une nouvelle soumission
+            $submission = Submission::create([
+                'status' => Submission::STATUS_PENDING,
+                'file_path' => '',
+                'assignment_id' => $assignment->id,
+                'student_id' => $user->id,
+            ]);
+
+            
+            // Créez des questions de soumission
+            $submissionQuestions = [];
+            $questions = Question::whereIn('id', $assignment->question_ids)->get();
+
+            foreach ($questions as $question) {
+                $submissionQuestion = SubmissionQuestion::create([
+                    'submission_id' => $submission->id,
+                    'content' =>$question->content,
+                    'choices' => json_decode($question->choices),
+                    'correct_choice_id' => $question->correct_choice_id,
+                ]);
+                $submissionQuestion;
+                $submissionQuestions[] = $submissionQuestion;
+            }
+
+            // Passez les questions à la vue
+            return view('assignments.compose', compact('assignment', 'submission', 'submissionQuestions'));
+        }
+
+
+        public function submit(Request $request, Assignment $assignment)
+        {
+            $user = Auth::user();
+            $submission = Submission::where('assignment_id', $assignment->id)
+                ->where('student_id', $user->id)
+                ->firstOrFail();
+        
+            // Récupérer toutes les questions liées à la soumission (avec leurs réponses potentielles)
+            $submissionQuestions = SubmissionQuestion::where('submission_id', $submission->id)->get();
+            
+            // Valider les réponses soumises par l'élève
+            $validated = $request->validate([
+                'answers' => 'required|array',
+                'answers.*' => 'integer', // Chaque réponse doit être un ID de choix valide
+            ]);
+        
+            // Persister les réponses de l'élève pour chaque question soumise
+            foreach ($submissionQuestions as $submissionQuestion) {
+                // Vérifier si l'élève a répondu à cette question
+                if (isset($validated['answers'][$submissionQuestion->id])) {
+                    $studentAnswer = $validated['answers'][$submissionQuestion->id];
+        
+                    // Mettez à jour ou créez la réponse de l'élève pour chaque question
+                    $submissionQuestion->update([
+                        'student_answer_id' => $studentAnswer,  // Persister la réponse de l'élève
+                    ]);
+                }
+            }
+        
+            // Mettre à jour le statut de la soumission pour indiquer qu'elle a été corrigée
+            $submission->update([
+                'status' => Submission::STATUS_PENDING,
+            ]);
+        
+            // Rediriger vers la vue des soumissions (par exemple, page de récapitulatif)
+            return redirect()->route('assignments.index', ['view' => 'submissions'])  // Remplacez par la route appropriée si nécessaire
+                ->with('success', "Vos réponses ont été soumises avec succès.");
+        }
+        
+
 
 
 

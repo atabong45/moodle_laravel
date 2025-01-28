@@ -63,13 +63,17 @@
                         </table>
                     </div>
                 @else
-                    <div class="flex justify-between items-center mb-6">
-                        <h3 class="text-xl font-bold text-gray-800">Liste des Énoncés</h3>
-                        <a href="{{ route('assignments.create') }}" 
-                           class="bg-blue-500 text-white px-4 py-2 rounded-lg hover:bg-blue-600 transition">
-                            <i class="fas fa-plus mr-1"></i> Nouvel Énoncé
-                        </a>
-                    </div>
+                    @if(auth()->user()->hasRole('ROLE_TEACHER'))
+                        <div class="flex justify-between items-center mb-6">
+                            <h3 class="text-xl font-bold text-gray-800">Liste des Énoncés</h3>
+                            <a href="{{ route('assignments.create') }}" 
+                            class="bg-blue-500 text-white px-4 py-2 rounded-lg hover:bg-blue-600 transition">
+                                <i class="fas fa-plus mr-1"></i> Nouvel Énoncé
+                            </a>
+                        </div>
+                    @endif
+
+
                     <div class="overflow-x-auto">
                         <table class="min-w-full bg-white border border-gray-200 rounded-lg">
                             <thead class="bg-gray-50">

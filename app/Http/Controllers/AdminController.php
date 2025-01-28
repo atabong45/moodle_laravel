@@ -72,15 +72,15 @@ class AdminController extends Controller
             'email' => $request->email,
         ]);
 
-        // Mettre à jour le mot de passe si fourni
-        if ($request->filled('password')) {
-            $request->validate([
-                'password' => ['confirmed', Rules\Password::defaults()],
-            ]);
-            $user->update([
-                'password' => Hash::make($request->password),
-            ]);
-        }
+        // // Mettre à jour le mot de passe si fourni
+        // if ($request->filled('password')) {
+        //     $request->validate([
+        //         'password' => ['confirmed', Rules\Password::defaults()],
+        //     ]);
+        //     $user->update([
+        //         'password' => Hash::make($request->password),
+        //     ]);
+        // }
 
         // Synchroniser les rôles
         $user->syncRoles([$request->role]);

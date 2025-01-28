@@ -12,8 +12,7 @@ use App\Http\Controllers\SubmissionController;
 use App\Http\Controllers\UserController;
 use App\Http\Controllers\CategoryController;
 use App\Http\Controllers\QuestionController;
-
-
+use App\Http\Controllers\SubmissionQuestionController;
 
 
 // Welcome route (accessible sans authentification)
@@ -46,8 +45,6 @@ Route::middleware('auth')->group(function () {
     Route::resource('assignments', AssignmentController::class);
     Route::post('/assignments/{assignment}/toggle-publish', [AssignmentController::class, 'togglePublish'])
     ->name('assignments.togglePublish');
-    Route::get('/assignments/{assignment}/compose', [AssignmentController::class, 'compose'])
-    ->name('assignments.compose');
     // Routes pour les questions d'un assignment
     Route::get('assignments/{assignment}/questions/edit', [AssignmentController::class, 'editQuestions'])->name('assignments.questions.edit');
     Route::put('assignments/{assignment}/questions/update', [AssignmentController::class, 'updateQuestions'])->name('assignments.questions.update');
@@ -75,10 +72,20 @@ Route::middleware('auth')->group(function () {
         Route::delete('/sections/{section}', [SectionController::class, 'destroy'])->name('sections.destroy'); // Delete a section
     });
 
-    Route::get('/sections/create_for_teacher/{course_id}', [SectionController::class, 'create_for_teacher'])->name('sections.create');
-    Route::post('/sections/store_for_teacher/', [SectionController::class, 'store_for_teacher'])->name('sections.store');
+    // Route::get('/sections/create_for_teacher/{course_id}', [SectionController::class, 'create_for_teacher'])->name('sections.create');
+    // Route::post('/sections/store_for_teacher/', [SectionController::class, 'store_for_teacher'])->name('sections.store');
     // Submissions
     Route::resource('submissions', SubmissionController::class);
+
+    // questions d'une soumission
+    // Routes pour les soumissions
+    Route::resource('submissions', SubmissionController::class);
+
+    // Routes pour les questions de soumission
+    Route::post('submissions/{submission}/questions', [SubmissionQuestionController::class, 'store'])
+        ->name('submissions.questions.store');
+
+
 
     // Users
     Route::resource('users', UserController::class);
@@ -104,6 +111,13 @@ Route::middleware('auth')->group(function () {
 
 
 });
+
+    Route::middleware(['auth', 'role:ROLE_STUDENT'])->group(function () {
+        Route::get('assignments/{assignment}/compose', [AssignmentController::class, 'compose'])
+            ->name('assignments.compose');
+        Route::post('assignments/{assignment}/submit', [AssignmentController::class, 'submit'])
+            ->name('assignments.submit');
+    });
 
 
 
