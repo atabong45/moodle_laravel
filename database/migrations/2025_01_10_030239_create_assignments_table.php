@@ -16,7 +16,9 @@ return new class extends Migration
             $table->string('name');
             $table->timestamp('duedate');
             $table->integer('attemptnumber');
+            $table->boolean('published')->default(false);
             $table->foreignId('module_id')->constrained()->onDelete('cascade');
+            $table->foreignId('created_by')->constrained('users')->onDelete('cascade');
             $table->timestamps();
         });
     }

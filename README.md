@@ -132,15 +132,15 @@ npm run build
 ```
 
 ##### 3. Configurer l'environnement
-Copiez le fichier `.env.example` en `.env` et configurez les paramètres suivants :
+Copiez le fichier `.env.example` en `.env` avec la commande `cp .env.example .env`. Ensuite, configurez les paramètres suivants :
 
 - **Connexion à la base de données** : Renseignez les champs `DB_CONNECTION`, `DB_HOST`, `DB_PORT`, `DB_DATABASE`, `DB_USERNAME`, et `DB_PASSWORD`.
 
 - **URL et token Moodle** : Ajoutez ceci dans votre fichier `.env` en modifiant ces variables selon votre convenance :
 
-```bash
-   MOODLE_API_URL=http://localhost/webservice/rest/server.php
-   MOODLE_API_TOKEN=<TOKEN>
+```bash   
+MOODLE_API_URL=http://localhost/webservice/rest/server.php
+MOODLE_API_TOKEN=<TOKEN>
 ```
 
 ##### 4. Générer une clé d'application Laravel

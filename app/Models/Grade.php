@@ -22,4 +22,10 @@ class Grade extends Model
     {
         return $this->belongsTo(User::class, 'teacher_id');
     }
+
+    // Méthode pour vérifier si un grade est associé à une soumission
+    public function isGraded()
+    {
+        return !is_null($this->grade);
+    }
 }

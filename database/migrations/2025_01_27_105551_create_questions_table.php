@@ -11,12 +11,11 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('submissions', function (Blueprint $table) {
+        Schema::create('questions', function (Blueprint $table) {
             $table->id();
-            $table->enum('status', ['pending', 'corrected'])->default('pending');
-            $table->string('file_path');
-            $table->foreignId('assignment_id')->constrained()->onDelete('cascade');
-            $table->foreignId('student_id')->constrained('users')->onDelete('cascade');
+            $table->text('content'); // Le contenu de la question
+            $table->json('choices'); // Les propositions sous forme de tableau JSON
+            $table->integer('correct_choice_id'); // L'id de la proposition correcte
             $table->timestamps();
         });
     }
@@ -26,6 +25,6 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::dropIfExists('submissions');
+        Schema::dropIfExists('questions');
     }
 };

@@ -11,11 +11,21 @@ class Assignment extends Model
         'duedate',
         'attemptnumber',
         'module_id',
+        'question_ids',
+        'published',
+        'created_by',
     ];
 
     protected $casts = [
         'duedate' => 'datetime',
+        'question_ids' => 'array',
+        'published' => 'boolean',
     ];
+    
+    public function questions()
+    {
+        return $this->belongsToMany(Question::class);
+    }
 
     public function module()
     {
