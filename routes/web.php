@@ -44,6 +44,15 @@ Route::middleware('auth')->group(function () {
 
     // Assignments
     Route::resource('assignments', AssignmentController::class);
+    Route::post('/assignments/{assignment}/toggle-publish', [AssignmentController::class, 'togglePublish'])
+    ->name('assignments.togglePublish');
+    Route::get('/assignments/{assignment}/compose', [AssignmentController::class, 'compose'])
+    ->name('assignments.compose');
+    // Routes pour les questions d'un assignment
+    Route::get('assignments/{assignment}/questions/edit', [AssignmentController::class, 'editQuestions'])->name('assignments.questions.edit');
+    Route::put('assignments/{assignment}/questions/update', [AssignmentController::class, 'updateQuestions'])->name('assignments.questions.update');
+    
+
 
     // Courses
     Route::resource('courses', CourseController::class);

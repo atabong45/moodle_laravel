@@ -21,6 +21,19 @@
         <!-- Barre de navigation -->
         @include('layouts.navigation')
 
+        @if(session('error'))
+            <div class="alert alert-danger">
+                {{ session('error') }}
+            </div>
+        @endif
+
+        @if(session('success'))
+            <div class="alert alert-success">
+                {{ session('success') }}
+            </div>
+        @endif
+
+
         <!-- En-tête -->
         @if (isset($header))
             <header class="bg-white shadow">

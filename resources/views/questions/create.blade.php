@@ -27,11 +27,10 @@
                         <div class="mb-4">
                             <label for="correct_choice_id" class="block text-sm font-medium text-gray-700">Choix Correct</label>
                             <select id="correct_choice_id" name="correct_choice_id" class="mt-1 block w-full border-gray-300 rounded-md" required>
-                                @foreach (old('choices', []) as $index => $choice)
-                                    <option value="{{ $index }}" {{ old('correct_choice_id') == $index ? 'selected' : '' }}>
-                                        {{ $choice }}
-                                    </option>
-                                @endforeach
+                                <option value="1" {{ old('correct_choice_id') == 1 ? 'selected' : '' }}>1</option>
+                                <option value="2" {{ old('correct_choice_id') == 2 ? 'selected' : '' }}>2</option>
+                                <option value="3" {{ old('correct_choice_id') == 3 ? 'selected' : '' }}>3</option>
+                                <option value="4" {{ old('correct_choice_id') == 4 ? 'selected' : '' }}>4</option>
                             </select>
                         </div>
 

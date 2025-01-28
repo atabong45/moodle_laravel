@@ -1,80 +1,54 @@
-<?php
+@extends('layouts.app')
 
-namespace App\Http\Controllers;
+@section('content')
+    <div class="py-12 bg-gray-100">
+        <div class="max-w-7xl mx-auto sm:px-6 lg:px-8">
+            <div class="bg-white shadow-lg rounded-lg">
+                <div class="p-6">
+                    <h3 class="text-lg font-medium text-gray-800 mb-4">Liste des Questions</h3>
 
-use App\Models\Question;
-use Illuminate\Http\Request;
-
-class QuestionController extends Controller
-{
-    // Afficher la liste des questions
-    public function index()
-    {
-        $questions = Question::all();
-        return view('questions.index', compact('questions'));
-    }
-
-    // Afficher le formulaire pour créer une nouvelle question
-    public function create()
-    {
-        return view('questions.create');
-    }
-
-    // Enregistrer une nouvelle question
-    public function store(Request $request)
-    {
-        $request->validate([
-            'content' => 'required|string',
-            'choices' => 'required|array|min:2',
-            'correct_choice_id' => 'required|integer',
-        ]);
-
-        Question::create([
-            'content' => $request->content,
-            'choices' => $request->choices,
-            'correct_choice_id' => $request->correct_choice_id,
-        ]);
-
-        return redirect()->route('questions.index')
-                         ->with('success', 'Question créée avec succès.');
-    }
-
-    // Afficher le formulaire pour modifier une question
-    public function edit($questionId)
-    {
-        $question = Question::findOrFail($questionId);
-        return view('questions.edit', compact('question'));
-    }
-
-    // Mettre à jour une question
-    public function update(Request $request, $questionId)
-    {
-        $request->validate([
-            'content' => 'required|string',
-            'choices' => 'required|array|min:2',
-            'correct_choice_id' => 'required|integer',
-        ]);
-
-        $question = Question::findOrFail($questionId);
-
-        $question->update([
-            'content' => $request->content,
-            'choices' => $request->choices,
-            'correct_choice_id' => $request->correct_choice_id,
-        ]);
-
-        return redirect()->route('questions.index')
-                         ->with('success', 'Question mise à jour avec succès.');
-    }
-
-    // Supprimer une question
-    public function destroy($questionId)
-    {
-        $question = Question::findOrFail($questionId);
-
-        $question->delete();
-
-        return redirect()->route('questions.index')
-                         ->with('success', 'Question supprimée avec succès.');
-    }
-}
+                    <table class="min-w-full table-auto">
+                        <thead>
+                            <tr>
+                                <th class="px-4 py-2 text-left">#</th>
+                                <th class="px-4 py-2 text-left">Contenu</th>
+                                @if(auth()->user()->hasRole('ROLE_TEACHER'))
+                                 <th class="px-4 py-2 text-left">Actions</th>
+                                @endif
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @foreach ($questions as $question)
+                                <tr>
+                                    <td class="border px-4 py-2">{{ $loop->iteration }}</td>
+                                    <td class="border px-4 py-2">{{ $question->content }}</td>
+                                    @if(auth()->user()->hasRole('ROLE_TEACHER'))
+                                        <td class="border px-4 py-2">
+                                        
+                                                <a href="{{ route('questions.edit', $question->id) }}" class="text-blue-500 hover:text-blue-700">Modifier</a>
+                                        
+                                            
+                                                <form action="{{ route('questions.destroy', $question->id) }}" method="POST" class="inline">
+                                                    @csrf
+                                                    @method('DELETE')
+                                                    <button type="submit" class="text-red-500 hover:text-red-700" onclick="return confirm('Êtes-vous sûr de vouloir supprimer cette question ?')">
+                                                        Supprimer
+                                                    </button>
+                                                </form>
+                                    
+                                        </td>
+                                    @endif
+                                </tr>
+                            @endforeach
+                        </tbody>
+                    </table>
+                    @if(auth()->user()->hasRole('ROLE_TEACHER'))
+                        <div class="mt-4">
+                            <a href="{{ route('questions.create') }}" class="bg-blue-500 text-white px-6 py-2 rounded-lg hover:bg-blue-600">Ajouter une Question</a>
+                        </div>
+                    @endif
+                </div>
+            </div>
+        </div>
+    </div>
+@endsection

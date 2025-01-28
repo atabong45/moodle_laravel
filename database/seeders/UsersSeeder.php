@@ -17,7 +17,7 @@ class UsersSeeder extends Seeder
                 'email' => 'student@example.com',
             ],
             [
-                'name' => 'Étudiant Example',
+                'name' => 'Étudiant 1',
                 'password' => Hash::make('student12345'), // Mot de passe sécurisé
             ]
         );
@@ -28,7 +28,7 @@ class UsersSeeder extends Seeder
                 'email' => 'teacher@example.com',
             ],
             [
-                'name' => 'Enseignant Example',
+                'name' => 'Enseignant 1',
                 'password' => Hash::make('teacher12345'), // Mot de passe sécurisé
             ]
         );

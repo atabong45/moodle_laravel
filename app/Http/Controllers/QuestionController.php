@@ -35,7 +35,7 @@ class QuestionController extends Controller
             'correct_choice_id' => $request->correct_choice_id,
         ]);
 
-        return redirect()->route('questions.index')
+        return redirect()->back()
                          ->with('success', 'Question créée avec succès.');
     }
 
@@ -74,7 +74,7 @@ class QuestionController extends Controller
 
         $question->delete();
 
-        return redirect()->route('questions.index')
+        return redirect()->back()
                          ->with('success', 'Question supprimée avec succès.');
     }
 }

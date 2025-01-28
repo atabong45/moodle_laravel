@@ -38,7 +38,8 @@ class QuestionsTableSeeder extends Seeder
             Question::create([
                 'content' => $content,
                 'choices' => json_encode(['Option A', 'Option B', 'Option C', 'Option D']),
-                'correct_choice_id' => rand(0, 3) // On sélectionne une réponse correcte aléatoire
+                'correct_choice_id' => rand(0, 3),
+                
             ]);
         }
 

@@ -6,25 +6,39 @@
             <div class="bg-white shadow-lg rounded-lg">
                 <div class="p-6">
                     <h3 class="text-lg font-medium text-gray-800 mb-4">Détails de la Question</h3>
-                    <p class="text-sm text-gray-800"><strong>Contenu :</strong> {{ $question->content }}</p>
 
-                    <div class="mt-4">
+                    <div class="mb-4">
+                        <strong>Contenu :</strong> <p>{{ $question->content }}</p>
+                    </div>
+
+                    <div class="mb-4">
                         <strong>Propositions :</strong>
-                        <ul class="list-disc pl-6">
-                            @foreach ($question->choices as $choice)
-                                <li class="text-sm text-gray-800">{{ $choice }}</li>
+                        <ul class="list-disc pl-5">
+                            @foreach (json_decode($question->choices) as $index => $choice)
+                                <li class="{{ $question->correct_choice_id == $index ? 'font-bold text-green-600' : '' }}">
+                                    {{ chr(65 + $index) }}. {{ $choice }}
+                                </li>
                             @endforeach
                         </ul>
                     </div>
 
-                    <p class="mt-4 text-sm text-gray-800"><strong>Proposition correcte :</strong> {{ $question->choices[$question->correct_choice_id] }}</p>
-
-                    <div class="mt-6">
-                        <a href="{{ route('questions.index') }}" 
-                           class="bg-gray-500 text-white px-4 py-2 rounded-lg hover:bg-gray-600 transition duration-200">
-                            Retour à la liste des questions
-                        </a>
+                    <div class="mb-4">
+                        <strong>Réponse correcte :</strong> {{ chr(65 + $question->correct_choice_id) }}.
                     </div>
+
+                    @can('update', $question)
+                        <a href="{{ route('questions.edit', $question->id) }}" class="bg-yellow-500 text-white px-6 py-2 rounded-lg hover:bg-yellow-600">Modifier</a>
+                    @endcan
+
+                    @can('delete', $question)
+                        <form action="{{ route('questions.destroy', $question->id) }}" method="POST" class="inline">
+                            @csrf
+                            @method('DELETE')
+                            <button type="submit" class="text-red-500 hover:text-red-700 mt-4" onclick="return confirm('Êtes-vous sûr de vouloir supprimer cette question ?')">
+                                Supprimer
+                            </button>
+                        </form>
+                    @endcan
                 </div>
             </div>
         </div>
