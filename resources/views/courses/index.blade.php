@@ -33,7 +33,7 @@
     <hr class="w-3/5 h-[3px] mb-4 bg-black" />
     <div class='flex flex-col gap-4 pl-2'>
         <div class="mb-4">
-            <h3 class='text-xl text-primary mb-2'>{{ strtoupper('Science') }}</h3>
+            <h3 class='text-xl text-primary mb-2'>{{ strtoupper('Vos cours') }}</h3>
             <div class="grid grid-cols-4 gap-4">
                 @foreach($courses as $course)
                     <x-course :course="$course"/>
@@ -41,7 +41,7 @@
             </div>
         </div>
         <div class="mb-4">
-            <h3 class='text-xl text-primary mb-2'>{{ strtoupper('Litterature') }}</h3>
+            <h3 class='text-xl text-primary mb-2'>{{ strtoupper('Cours disponibles') }}</h3>
             <div class="grid grid-cols-4 gap-4">
                 @foreach($courses as $course)
                     <x-course :course="$course"/>
