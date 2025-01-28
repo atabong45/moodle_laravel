@@ -71,8 +71,9 @@
 
                     @if(auth()->user()->hasRole('ROLE_TEACHER') && $assignment->created_by == auth()->user()->id)
                     <!-- Bouton pour modifier -->
+                     <hr>
                             <a href="{{ route('assignments.questions.edit', $assignment->id) }}" 
-                            class="text-yellow-500 hover:text-yellow-700 font-medium mx-2">
+                            class="text-blue-500 hover:text-yellow-700 font-medium mx-2">
                                 <i class="fas fa-edit mr-1"></i> Modifier
                             </a>
                         <!-- Bouton pour publier l'évaluation -->

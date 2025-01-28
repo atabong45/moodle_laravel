@@ -40,8 +40,7 @@ $iconActiveClasses = 'transform rotate-90 text-blue-700';
             </h2>
             <div class="px-4 py-2 info-panel-content hidden">
                 @foreach ($section->modules as $module)
-                    <p class="mb-2"><strong>Modulename:</strong> {{ $module->modname }}</p>
-                    <p class="mb-2">{{ $module->downloadcontent }} </p>
+                    <p class="mb-2"><strong>Document name:</strong> {{ $module->modname }}</p>
                     <div class="flex justify-center items-center">
                         <a href="{{ $module->file_path }}" target="_blank" rel="noopener noreferrer"
                                 {{-- <a href="{{ route('modules.download', $module->id) }}"                                 --}}
