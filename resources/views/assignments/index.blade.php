@@ -46,7 +46,7 @@
                                         <td class="px-6 py-4 text-sm text-gray-800">{{ $submission->assignment->name }}</td>
                                         <td class="px-6 py-4 text-sm">
                                             <span class="px-2 py-1 text-xs font-medium rounded-lg
-                                                {{ $submission->status === 'submitted' ? 'bg-green-100 text-green-700' : 'bg-yellow-100 text-yellow-700' }}">
+                                                {{ $submission->status === 'submitted'|| $submission->status === 'corrected' ? 'bg-green-100 text-green-700' : 'bg-yellow-100 text-yellow-700' }}">
                                                 {{ ucfirst($submission->status) }}
                                             </span>
                                         </td>

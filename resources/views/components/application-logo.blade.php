@@ -1,1 +1,1 @@
-<img src="/images/moodle-logo.png" alt="moodle client">
+<img src="/images/logo_moodle_client.png" alt="moodle client">
