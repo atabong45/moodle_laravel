@@ -53,6 +53,7 @@ Route::middleware('auth')->group(function () {
     Route::put('assignments/{assignment}/questions/update', [AssignmentController::class, 'updateQuestions'])->name('assignments.questions.update');
     
 
+    Route::resource('sections', SectionController::class);
 
     // Courses
     Route::resource('courses', CourseController::class);
@@ -65,7 +66,7 @@ Route::middleware('auth')->group(function () {
     Route::get('/modules/download/{module}', [ModuleController::class, 'download'])->name('modules.download');
 
     // Sections (nested under courses)
-    Route::prefix('courses/{course}')->group(function () {
+    Route::prefix('/courses/{course}')->group(function () {
         Route::get('/sections', [SectionController::class, 'index'])->name('sections.index'); // List all sections of a course
         Route::get('/sections/create', [SectionController::class, 'create'])->name('sections.create'); // Form to create a section
         Route::post('/sections', [SectionController::class, 'store'])->name('sections.store'); // Store a new section

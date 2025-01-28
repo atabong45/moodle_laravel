@@ -5,12 +5,14 @@
     <h1 class='text-3xl font-bold'>My courses</h1>
     <hr class="w-full h-[2px] mt-2 mb-4 bg-black" />
     <div class='flex w-full gap-4 mb-6'>
-        <x-button>
-            Manage courses
-        </x-button>
-        <x-button>
-            Manage categories
-        </x-button>
+        <a href="{{ route('courses.create') }}">
+            <x-button>
+                Manage courses
+            </x-button>
+        </a>
+            <x-button>
+                Manage categories
+            </x-button>
         <a class="ml-auto" href="{{ route('courses.create') }}">
             <x-button full='true' href="{{ route('courses.create') }}">
                 Create a course
