@@ -2,49 +2,49 @@
 
 @section('content')
 <div class="container w-4/5 mt-10 mx-auto flex flex-col justify-center gap-4">
-    <h1 class='text-3xl font-bold'>Dashboard</h1>
+    <h1 class='text-3xl font-bold'>Tableau de bord</h1>
     <hr class="w-full h-[2px] mt-2 mb-4 bg-black" />
     <div class="rounded-md border border-gray-300 p-4">
         <div>
-            <h2 class="text-2xl font-bold mb-4">Timeline</h2>
+            <h2 class="text-2xl font-bold mb-4">Chronologie</h2>
             <div class="flex gap-2">
                 <select name="duedate" id="duedate" class="rounded-md text-gray-700">
                     <optgroup label="General">
-                        <option value="all">All</option>
-                        <option value="overdue">Overdue</option>
+                        <option value="all">Toutes</option>
+                        <option value="overdue">En retard</option>
                     </optgroup>
                     <optgroup label="Due date">
-                        <option value="7d">Next 7 days</option>
-                        <option value="30d">Next 30 days</option>
-                        <option value="3m">Next 3 months</option>
-                        <option value="6m">Next 6 months</option>
+                        <option value="7d">7 prochains jours</option>
+                        <option value="30d">30 prochains jours</option>
+                        <option value="3m">3 prochains mois</option>
+                        <option value="6m">6 prochains mois</option>
                     </optgroup>
                 </select>
                 <select name="dates" id="dates" class="rounded-md text-gray-700">
-                    <option value="dates">Sort by dates</option>
-                    <option value="courses">Sort by courses</option>
+                    <option value="dates">Trier par dates</option>
+                    <option value="courses">Trier par cours</option>
                 </select>
-                <input type="text" placeholder="Search by activity type or name" class="rounded-md text-gray-700 px-2 py-1 w-96 ml-auto">
+                <input type="text" placeholder="Rechercher par type d'activité ou par nom" class="rounded-md text-gray-700 px-2 py-1 w-96 ml-auto">
             </div>
         </div>
         <div class="flex flex-col gap-2 justify-center items-center border-t border-gray-400 mt-8 py-8 text-gray-400">
             <div>
                 <i class="fa-regular fa-file-lines text-8xl"></i>
             </div>
-            <span class="text-xl">No activities require action</span>
+            <span class="text-xl">Aucun cours actif</span>
         </div>
     </div>
     <div class="rounded-md border border-gray-300 p-4">
-        <h2 class="text-2xl font-bold mb-4">Calendar</h2>
+        <h2 class="text-2xl font-bold mb-4">Calendrier</h2>
         <div class="flex flex-col gap-2">
             <div class="flex justify-between">
                 <select name="course-category" id="course-category" class="rounded-md text-gray-700">
-                    <option value="all">All courses</option>
-                    <option value="geography">Geography</option>
-                    <option value="mathematics">Mathematics</option>
+                    <option value="all">Tous les cours</option>
+                    <option value="geography">Geographie</option>
+                    <option value="mathematics">Mathematiques</option>
                 </select>
                 <x-button full='true' href="{{ route('courses.create') }}">
-                    New Event
+                    Nouvel évènement
                 </x-button>
             </div>
             <div>
@@ -52,9 +52,9 @@
                     <div class="lg:w-7/12 md:w-9/12 sm:w-10/12 mx-auto p-4">
                         <div class="bg-white shadow-lg rounded-lg overflow-hidden">
                             <div class="flex items-center justify-between px-6 py-3 bg-primary font-bold">
-                                <button id="prevMonth" class="text-white">Previous</button>
+                                <button id="prevMonth" class="text-white">Précédent</button>
                                 <h2 id="currentMonth" class="text-white"></h2>
-                                <button id="nextMonth" class="text-white">Next</button>
+                                <button id="nextMonth" class="text-white">Suivant</button>
                             </div>
                             <div class="grid grid-cols-7 gap-2 p-4" id="calendar">
                                 <!-- Calendar Days Go Here -->
