@@ -55,8 +55,8 @@ Route::middleware('auth')->group(function () {
     // Courses
     Route::resource('courses', CourseController::class);
 
-    // Grades
-    Route::resource('grades', GradeController::class);
+
+
 
     // Modules
     Route::resource('modules', ModuleController::class);
@@ -75,8 +75,7 @@ Route::middleware('auth')->group(function () {
 
     // Route::get('/sections/create_for_teacher/{course_id}', [SectionController::class, 'create_for_teacher'])->name('sections.create');
     // Route::post('/sections/store_for_teacher/', [SectionController::class, 'store_for_teacher'])->name('sections.store');
-    // Submissions
-    Route::resource('submissions', SubmissionController::class);
+    
 
     // questions d'une soumission
     // Routes pour les soumissions
@@ -85,6 +84,9 @@ Route::middleware('auth')->group(function () {
     // Routes pour les questions de soumission
     Route::post('submissions/{submission}/questions', [SubmissionQuestionController::class, 'store'])
         ->name('submissions.questions.store');
+    // Grades
+        Route::resource('grades', GradeController::class);
+        Route::post('/submissions/{submission}/grade', [SubmissionController::class, 'grade'])->name('submissions.grade');
 
 
 

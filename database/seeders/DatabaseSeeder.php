@@ -29,7 +29,7 @@ class DatabaseSeeder extends Seeder
 
         $this->call(AssignmentsTableSeeder::class);
 
-        $this->call(SubmissionsTableSeeder::class);
+        // $this->call(SubmissionsTableSeeder::class);
 
         
     }

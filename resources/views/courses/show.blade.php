@@ -74,7 +74,7 @@ $iconActiveClasses = 'transform rotate-90 text-blue-700';
             </div>
         @endif
 
-        <form action="{{ route('sections.store') }}" method="POST">
+        <form action="{{ route('sections.store', ['course' => $course->id]) }}" method="POST">
             @csrf
             <div class="mb-3">
                 <label for="name" class="form-label">Name</label>
