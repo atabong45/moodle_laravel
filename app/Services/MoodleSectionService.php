@@ -21,11 +21,6 @@ class MoodleSectionService
         ];
     }
 
-    /**
-     * Récupérer toutes les sections d'un cours
-     * Cette méthode utilise core_course_get_contents qui retourne les sections
-     * avec leurs modules associés
-     */
     public function listerSectionsCours(int $courseId): array
     {
         try {
@@ -42,10 +37,6 @@ class MoodleSectionService
         }
     }
 
-    /**
-     * Créer une nouvelle section
-     * Note: Cette méthode crée une section vide à la fin du cours
-     */
     public function creerSection(int $courseId, string $name, int $sectionNumber, array $sectionData = []): array
     {
         try {
@@ -56,7 +47,6 @@ class MoodleSectionService
                 'section[sectionnumber]' => $sectionNumber
             ]);
 
-            // Ajouter des données supplémentaires si fournies
             foreach ($sectionData as $key => $value) {
                 $params["section[$key]"] = $value;
             }

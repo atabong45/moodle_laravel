@@ -9,6 +9,7 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Validation\ValidationException;
 use Illuminate\Support\Facades\Log;
+use App\Models\Category;
 
 class CourseController extends Controller
 {
@@ -49,9 +50,9 @@ class CourseController extends Controller
 
     public function create()
     {
-        return view('courses.create');
-    }
-
+        $categories = Category::all();
+    return view('courses.create', compact('categories'));
+}
     public function store(Request $request)
     {
         try{
@@ -68,13 +69,7 @@ class CourseController extends Controller
             return redirect()->route('courses.create')->with('error', 'Course not created ! Check parameters');
         }
 
-       $moodleCourse = $this->moodleCourseService->createCourse($validated);
-        dd($moodleCourse);
-       $validated['teacher_id'] = Auth::id();
-        // Check if the Moodle course creation was successful
-        if (isset($moodleCourse['exception']) || isset($moodleCourse['errorcode'])) {
-            return redirect()->route('courses.create')->with('error', 'Failed to create course in Moodle: ' . $moodleCourse['message']);
-        }
+
 
         // Save the course in the local database
         Course::create($validated);

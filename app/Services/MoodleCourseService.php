@@ -4,6 +4,7 @@ namespace App\Services;
 
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Log;
+use App\Models\Course;
 
 class MoodleCourseService
 {
@@ -50,16 +51,24 @@ class MoodleCourseService
     /**
      * Create a new course
      */
-    public function createCourse(array $courseData): array
+    public function createCourse(Course $course)
     {
         try {
             $params = array_merge($this->defaultParams, [
                 'wsfunction' => 'core_course_create_courses',
-                'courses[0][fullname]' => $courseData['fullname'],
-                'courses[0][shortname]' => $courseData['shortname']
+                'courses' => [
+                    [
+                        'fullname' => $course->fullname,
+                        'shortname' => $course->shortname,
+                        'categoryid' => $course->category_id,
+                        'summary' => $course->summary,
+                        'startdate' => $course->startdate ? strtotime($course->startdate) : null,
+                        'enddate' => $course->enddate ? strtotime($course->enddate) : null,
+                    ]
+                ]
             ]);
 
-            // Add optional parameters if they exist
+            //Add optional parameters if they exist
             $optionalFields = ['summary', 'format', 'showgrades', 'newsitems', 'startdate', 'enddate'];
             foreach ($optionalFields as $field) {
                 if (isset($courseData[$field])) {
@@ -68,10 +77,14 @@ class MoodleCourseService
             }
 
             $response = Http::get($this->apiUrl, $params);
-            return $response->json();
+            if (isset($data['errorcode']) || isset($data['exception'])) {
+                Log::error('Moodle API Error (createCourse): ' . $data['message']);
+                return false;
+            }
+            return true;
         } catch (\Exception $e) {
             Log::error('Moodle API Error (createCourse): ' . $e->getMessage());
-            throw $e;
+            return false;
         }
     }
 
@@ -192,6 +205,27 @@ class MoodleCourseService
         } catch (\Exception $e) {
             Log::error('Moodle API Error (unenrollUser): ' . $e->getMessage());
             throw $e;
+        }
+    }
+
+        public function isServerAvailable(): bool
+    {
+        try {
+            $response = Http::get($this->apiUrl, [
+                'wstoken' => $this->token,
+                'wsfunction' => 'core_webservice_get_site_info',
+                'moodlewsrestformat' => 'json'
+            ]);
+
+            if ($response->successful()) {
+                return true;
+            } else {
+                Log::error('Moodle API Error (isServerAvailable): ' . $response->body());
+                return false;
+            }
+        } catch (\Exception $e) {
+            Log::error('Moodle API Error (isServerAvailable): ' . $e->getMessage());
+            return false;
         }
     }
 }
