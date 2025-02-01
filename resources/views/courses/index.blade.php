@@ -22,7 +22,7 @@
             </x-button>
         <a class="ml-auto" href="{{ route('courses.create') }}">
             <x-button full='true' href="{{ route('courses.create') }}">
-                Creer un cours
+                Créer un cours
             </x-button>
         </a>
     </div>

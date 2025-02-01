@@ -68,6 +68,7 @@ $iconActiveClasses = 'transform rotate-90 text-blue-700';
 
 
     <a href="javascript:void(0);" id="add-section-btn" class="btn btn-primary text-white bg-blue-500 p-2 rounded">Ajouter une Section</a>
+    <a href="{{ route('sections.create', ['course' => $course->id]) }}" id="add-section-btn" class="btn btn-primary text-white bg-blue-500 p-2 rounded">Ajouter une Section</a>
 
     <div id="add-section-form" class="container" style="display: none;">
         <h1 class=" font-bold text-xl">Créer une nouvelle Section pour {{ $course->fullname }}</h1>
@@ -89,7 +90,7 @@ $iconActiveClasses = 'transform rotate-90 text-blue-700';
                 <input type="text" name="name" id="name" class="form-control rounded" required>
             </div>
             <input type="hidden" name="course_id" value="{{ $course->id }}">
-            <button type="submit" class="btn btn-success">Créer</button>
+            <button type="submit" class="btn btn-success bg-blue-500 p-2 text-white rounded">Créer</button>
         </form>
     </div>
 
