@@ -1,7 +1,7 @@
 @extends('layouts.app')
 
 @section('content')
-<div class="container w-4/5 mt-10 mx-auto flex flex-col justify-center gap-4">
+<div class="container w-4/5 mt-10 mx-auto flex flex-col justify-center gap-4 bg-white p-6 rounded-2xl">
     <h1 class='text-3xl font-bold'>Tableau de bord</h1>
     <hr class="w-full h-[2px] mt-2 mb-4 bg-black" />
     <div class="rounded-md border border-gray-300 p-4">

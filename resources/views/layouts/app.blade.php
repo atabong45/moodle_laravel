@@ -43,8 +43,44 @@
             </header>
         @endif
 
+
+        
+
+
         <!-- Contenu principal -->
         <main class="py-8">
+
+            <!-- Beadcrumb -->
+             <div class = "container w-4/5  mx-auto flex flex-col justify-center">
+               
+                @php
+                    $segments = request()->segments();
+                    $breadcrumbs = [['name' => 'Accueil', 'url' => url('/')]];
+                    $path = '';
+
+                    foreach ($segments as $segment) {
+                        $path .= '/' . $segment;
+                        $breadcrumbs[] = ['name' => ucfirst(str_replace('-', ' ', $segment)), 'url' => url($path)];
+                    }
+                @endphp
+
+                @if(count($breadcrumbs) > 1)
+                    <nav aria-label="breadcrumb" class="bg-gray-100 p-3 rounded mb-4">
+                        <ol class="breadcrumb flex space-x-2">
+                            @foreach ($breadcrumbs as $breadcrumb)
+                                @if (!$loop->last)
+                                    <li>
+                                        <a href="{{ $breadcrumb['url'] }}" class="text-blue-500 hover:underline">{{ $breadcrumb['name'] }}</a> >
+                                    </li>
+                                @else
+                                    <li class="text-gray-700">{{ $breadcrumb['name'] }}</li>
+                                @endif
+                            @endforeach
+                        </ol>
+                    </nav>
+                @endif
+            </div>
+
             @yield('content')
 
             @yield('script')

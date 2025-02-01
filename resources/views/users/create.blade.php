@@ -2,6 +2,13 @@
 
 @section('content')
 <div class="container">
+    <!-- Bouton Retour -->
+    <div class="p-6">
+                    <a href="{{ url()->previous() }}" 
+                    class="text-blue-500 hover:text-blue-700 font-medium mb-4 inline-block">
+                        <i class="fas fa-arrow-left mr-1"></i> Retour
+                    </a>
+                </div>
     <h1>Créer un utilisateur</h1>
     <form action="{{ route('users.store') }}" method="POST">
         @csrf
