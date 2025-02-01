@@ -23,29 +23,33 @@ class CourseController extends Controller
 
     public function index(Request $request)
     {
-    //     $search = $request->get('search'); // To filter by name
-    //     // Fetch courses from Moodle
-    //     $moodleCourses = $this->moodleCourseService->getAllCourses();
-    //         // Optionally, save Moodle courses to the local database
-    //         foreach ($moodleCourses as $moodleCourse) {
-    //         Course::updateOrCreate(
-    //             ['id' => $moodleCourse['id']],
-    //             [
-    //             'fullname' => $moodleCourse['fullname'],
-    //             'shortname' => $moodleCourse['shortname'],
-    //             'summary' => $moodleCourse['summary'],
-    //             'numsections' => $moodleCourse['numsections'],
-    //             'startdate' => $moodleCourse['startdate'] == 0 ? now() : $moodleCourse['startdate'],
-    //             'enddate' => $moodleCourse['enddate'] == 0 ? now() : $moodleCourse['enddate'],
-    //             ]
-    //             );
-    // }
+        // Fetch courses from Moodle
+        $moodleCourses = $this->moodleCourseService->getAllCourses();
 
-    //     $courses = Course::when($search, function ($query, $search) {
-    //         return $query->where('fullname', 'like', '%' . $search . '%');
-    //     })->with('teacher')->get();
+        // Optionally, save Moodle courses to the local database
+        foreach ($moodleCourses as $moodleCourse) {
+            Course::updateOrCreate(
+                ['id' => $moodleCourse['id']],
+                [
+                'fullname' => $moodleCourse['fullname'],
+                'shortname' => $moodleCourse['shortname'],
+                'summary' => $moodleCourse['summary'],
+                'numsections' => $moodleCourse['numsections'],
+                'startdate' => $moodleCourse['startdate'] == 0 ? now() : $moodleCourse['startdate'],
+                'enddate' => $moodleCourse['enddate'] == 0 ? now() : $moodleCourse['enddate'],
+                ]
+            );
+        }
 
-        $courses = Course::with('courses.sections.modules')->get();
+        $search = $request->get('search');
+
+        if ($search) {
+            $courses = Course::when($search, function ($query, $search) {
+                return $query->where('fullname', 'like', '%' . $search . '%');
+            })->with('teacher')->get();
+        } else {
+            $courses = Course::with('sections.modules')->get();
+        }
 
         return view('courses.index', compact('courses'));
     }

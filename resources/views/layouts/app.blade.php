@@ -15,6 +15,9 @@
 
     <!-- Scripts -->
     @vite('resources/js/app.js')
+
+    <!-- Alpine.js -->
+    <script src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js" defer></script>
 </head>
 <body class="font-sans antialiased bg-gray-100">
     <div class="min-h-screen bg-gray-100">
