@@ -47,9 +47,9 @@
             <div class="flex items-center">
                 <label for="category" class="w-36">Category :</label>
                 <select name="category" class="py-1 rounded-md w-full" id="category" required>
-                    <option value="science">Science</option>
-                    <option value="math">Math</option>
-                    <option value="literature">Literature</option>
+               @foreach($categories as $category)
+                    <option value="{{ $category->id }}">{{ $category->name }}</option>
+                @endforeach
                 </select>
             </div>
 

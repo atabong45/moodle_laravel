@@ -11,6 +11,7 @@ class Submission extends Model
         'file_path',
         'assignment_id',
         'student_id',
+        'submission_question_ids', 
     ];
 
     // Définir les valeurs autorisées pour le status
@@ -19,6 +20,7 @@ class Submission extends Model
 
     protected $casts = [
         'duedate' => 'datetime',
+        'submission_question_ids' => 'array',
     ];
 
     // Relation avec l'Assignment

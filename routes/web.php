@@ -11,20 +11,27 @@ use App\Http\Controllers\SectionController;
 use App\Http\Controllers\SubmissionController;
 use App\Http\Controllers\UserController;
 use App\Http\Controllers\CategoryController;
+use App\Http\Controllers\EventController;
+use App\Http\Controllers\QuestionController;
+use App\Http\Controllers\SubmissionQuestionController;
 
-
+use App\Http\Controllers\SynchronisationController;
+use App\Models\Category;
+use App\Models\Course;
 
 // Welcome route (accessible sans authentification)
 Route::get('/', function () {
     return view('welcome');
-});
+})->name('home');
 
 // Group of routes requiring authentication
 Route::middleware('auth')->group(function () {
-
     // Dashboard
     Route::get('/dashboard', function () {
-        return view('dashboard');
+        $courses = Course::all();
+        $categories = Category::all();
+
+        return view('dashboard', compact('courses', 'categories'));
     })->middleware(['verified'])->name('dashboard');
 
     // Profile management
@@ -42,19 +49,22 @@ Route::middleware('auth')->group(function () {
 
     // Assignments
     Route::resource('assignments', AssignmentController::class);
+    Route::post('/assignments/{assignment}/toggle-publish', [AssignmentController::class, 'togglePublish'])
+    ->name('assignments.togglePublish');
+    // Routes pour les questions d'un assignment
+    Route::get('assignments/{assignment}/questions/edit', [AssignmentController::class, 'editQuestions'])->name('assignments.questions.edit');
+    Route::put('assignments/{assignment}/questions/update', [AssignmentController::class, 'updateQuestions'])->name('assignments.questions.update');
 
     // Courses
     Route::resource('courses', CourseController::class);
 
-    // Grades
-    Route::resource('grades', GradeController::class);
-
     // Modules
     Route::resource('modules', ModuleController::class);
     Route::get('/modules/download/{module}', [ModuleController::class, 'download'])->name('modules.download');
+    Route::post('/synchronisation', [SynchronisationController::class, 'synchronize'])->name('synchronisation');
 
-    // Sections (nested under courses)
-    Route::prefix('courses/{course}')->group(function () {
+    //Sections (nested under courses)
+    Route::prefix('/courses/{course}')->group(function () {
         Route::get('/sections', [SectionController::class, 'index'])->name('sections.index'); // List all sections of a course
         Route::get('/sections/create', [SectionController::class, 'create'])->name('sections.create'); // Form to create a section
         Route::post('/sections', [SectionController::class, 'store'])->name('sections.store'); // Store a new section
@@ -64,10 +74,18 @@ Route::middleware('auth')->group(function () {
         Route::delete('/sections/{section}', [SectionController::class, 'destroy'])->name('sections.destroy'); // Delete a section
     });
 
-    Route::get('/sections/create_for_teacher/{course_id}', [SectionController::class, 'create_for_teacher'])->name('sections.create');
-    Route::post('/sections/store_for_teacher/', [SectionController::class, 'store_for_teacher'])->name('sections.store');
-    // Submissions
+    // Route::get('/sections/create_for_teacher/{course_id}', [SectionController::class, 'create_for_teacher'])->name('sections.create');
+    // Route::post('/sections/store_for_teacher/', [SectionController::class, 'store_for_teacher'])->name('sections.store');
+
+    // questions d'une soumission
+    // Routes pour les soumissions
     Route::resource('submissions', SubmissionController::class);
+
+    // Routes pour les questions de soumission
+    Route::post('submissions/{submission}/questions', [SubmissionQuestionController::class, 'store'])->name('submissions.questions.store');
+    // Grades
+    Route::resource('grades', GradeController::class);
+    Route::post('/submissions/{submission}/grade', [SubmissionController::class, 'grade'])->name('submissions.grade');
 
     // Users
     Route::resource('users', UserController::class);
@@ -78,8 +96,8 @@ Route::middleware('auth')->group(function () {
     // Route pour obtenir les cours d'une catégorie
     Route::get('categories/{id}/courses', [CategoryController::class, 'getCourses']);
 
-       // Routes pour les administrateurs
-       Route::middleware(['auth', 'role:ROLE_ADMIN'])->group(function () {
+    // Routes pour les administrateurs
+    Route::middleware(['auth', 'role:ROLE_ADMIN'])->group(function () {
         Route::get('/admin/users', [AdminController::class, 'index'])->name('admin.users.index');
         Route::get('/admin/users/create', [AdminController::class, 'create'])->name('admin.users.create');
         Route::post('/admin/users', [AdminController::class, 'store'])->name('admin.users.store');
@@ -88,9 +106,21 @@ Route::middleware('auth')->group(function () {
         Route::delete('/admin/users/{user}', [AdminController::class, 'destroy'])->name('admin.users.destroy');
     });
 
+    // Routes pour les questions
+    Route::resource('/questions', QuestionController::class);
+
+    // Events
+    Route::get('/events', [EventController::class, 'index'])->name('events.index');
+    Route::post('/events', [EventController::class, 'store'])->name('events.store');
+    Route::delete('/events/{id}', [EventController::class, 'destroy'])->name('events.destroy');;
 });
 
-
+Route::middleware(['auth', 'role:ROLE_STUDENT'])->group(function () {
+    Route::get('assignments/{assignment}/compose', [AssignmentController::class, 'compose'])
+        ->name('assignments.compose');
+    Route::post('assignments/{assignment}/submit', [AssignmentController::class, 'submit'])
+        ->name('assignments.submit');
+});
 
 // Include authentication routes
 require __DIR__.'/auth.php';

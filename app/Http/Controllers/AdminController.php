@@ -9,26 +9,33 @@ use Illuminate\Validation\Rules;
 
 class AdminController extends Controller
 {
+    public function __construct()
+    {
+        
+    }
+
+    // Liste des utilisateurs
     public function index()
     {
         $users = User::with('roles')->paginate(10);
         return view('admin.users.index', compact('users'));
     }
 
+    // Afficher le formulaire de création
     public function create()
     {
         $roles = Role::all();
         return view('admin.users.create', compact('roles'));
     }
 
+    // Sauvegarder un nouvel utilisateur
     public function store(Request $request)
     {
         $request->validate([
             'name' => ['required', 'string', 'max:255'],
             'email' => ['required', 'string', 'email', 'max:255', 'unique:users'],
             'password' => ['required', 'confirmed', Rules\Password::defaults()],
-            'roles' => ['required', 'array'],
-            'roles.*' => ['exists:roles,name'],
+            'role' => ['required', 'exists:roles,name'],
         ]);
 
         $user = User::create([
@@ -37,12 +44,13 @@ class AdminController extends Controller
             'password' => Hash::make($request->password),
         ]);
 
-        $user->syncRoles($request->roles);
+        $user->assignRole($request->role);
 
         return redirect()->route('admin.users.index')
             ->with('success', 'Utilisateur créé avec succès.');
     }
 
+    // Afficher le formulaire d'édition
     public function edit(User $user)
     {
         $roles = Role::all();
@@ -50,13 +58,13 @@ class AdminController extends Controller
         return view('admin.users.edit', compact('user', 'roles', 'userRoles'));
     }
 
+    // Mettre à jour un utilisateur
     public function update(Request $request, User $user)
     {
         $request->validate([
             'name' => ['required', 'string', 'max:255'],
             'email' => ['required', 'string', 'email', 'max:255', 'unique:users,email,' . $user->id],
-            'roles' => ['required', 'array'],
-            'roles.*' => ['exists:roles,name'],
+            'role' => ['required', 'exists:roles,name'],
         ]);
 
         $user->update([
@@ -64,21 +72,24 @@ class AdminController extends Controller
             'email' => $request->email,
         ]);
 
-        if ($request->filled('password')) {
-            $request->validate([
-                'password' => ['confirmed', Rules\Password::defaults()],
-            ]);
-            $user->update([
-                'password' => Hash::make($request->password),
-            ]);
-        }
+        // // Mettre à jour le mot de passe si fourni
+        // if ($request->filled('password')) {
+        //     $request->validate([
+        //         'password' => ['confirmed', Rules\Password::defaults()],
+        //     ]);
+        //     $user->update([
+        //         'password' => Hash::make($request->password),
+        //     ]);
+        // }
 
-        $user->syncRoles($request->roles);
+        // Synchroniser les rôles
+        $user->syncRoles([$request->role]);
 
         return redirect()->route('admin.users.index')
             ->with('success', 'Utilisateur mis à jour avec succès.');
     }
 
+    // Supprimer un utilisateur
     public function destroy(User $user)
     {
         $user->delete();

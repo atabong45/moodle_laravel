@@ -11,24 +11,27 @@ class Assignment extends Model
         'duedate',
         'attemptnumber',
         'module_id',
+        'question_ids',
+        'published',
+        'created_by',
     ];
 
     protected $casts = [
         'duedate' => 'datetime',
+        'question_ids' => 'array',
+        'published' => 'boolean',
     ];
+    
+    public function questions()
+    {
+        return $this->belongsToMany(Question::class);
+    }
 
     public function module()
     {
         return $this->belongsTo(Module::class);
     }
 
-/*************  ✨ Codeium Command ⭐  *************/
-    /**
-     * The submissions that belong to the Assignment
-     *
-     * @return \Illuminate\Database\Eloquent\Relations\HasMany
-     */
-/******  516f88e1-7ef7-4fa3-9f3d-d4efa1a54f85  *******/    // Relation avec les soumissions
     public function submissions()
     {
         return $this->hasMany(Submission::class);

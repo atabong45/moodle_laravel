@@ -22,7 +22,7 @@ class AdminUserSeeder extends Seeder
         );
 
         // Assigner les rôles existants à l'utilisateur
-        $roles = ['ROLE_ADMIN', 'ROLE_USER'];
+        $roles = ['ROLE_ADMIN'];
 
         foreach ($roles as $roleName) {
             $role = Role::where('name', $roleName)->first();
