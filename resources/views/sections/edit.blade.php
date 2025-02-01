@@ -31,7 +31,7 @@
                 @endforeach
             </select>
         </div>
-        <button type="submit" class="btn btn-success">Modifier</button>
+        <button type="submit" class="btn btn-success">Mettre à jour</button>
     </form>
 </div>
 @endsection

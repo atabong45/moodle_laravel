@@ -2,16 +2,16 @@
 
 @section('content')
 <div class="container">
-    <h1>Submissions</h1>
-    <a href="{{ route('submissions.create') }}" class="btn btn-primary mb-3">Create New Submission</a>
+    <h1>Soumissions</h1>
+    <a href="{{ route('submissions.create') }}" class="btn btn-primary mb-3">Créer une nouvelle Soumission</a>
     <table class="table">
         <thead>
             <tr>
                 <th>ID</th>
                 <th>Status</th>
-                <th>File Path</th>
-                <th>Assignment</th>
-                <th>Student</th>
+                <th>Chemin d'acces au fichier</th>
+                <th>Evaluation</th>
+                <th>Elève</th>
                 <th>Actions</th>
             </tr>
         </thead>
@@ -24,12 +24,12 @@
                     <td>{{ $submission->assignment->name }}</td>
                     <td>{{ $submission->student->username }}</td>
                     <td>
-                        <a href="{{ route('submissions.show', $submission) }}" class="btn btn-info">View</a>
-                        <a href="{{ route('submissions.edit', $submission) }}" class="btn btn-warning">Edit</a>
+                        <a href="{{ route('submissions.show', $submission) }}" class="btn btn-info">Voir</a>
+                        <a href="{{ route('submissions.edit', $submission) }}" class="btn btn-warning">Editer</a>
                         <form action="{{ route('submissions.destroy', $submission) }}" method="POST" style="display:inline;">
                             @csrf
                             @method('DELETE')
-                            <button type="submit" class="btn btn-danger">Delete</button>
+                            <button type="submit" class="btn btn-danger">Supprimer</button>
                         </form>
                     </td>
                 </tr>

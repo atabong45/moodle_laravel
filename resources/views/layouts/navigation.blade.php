@@ -62,7 +62,7 @@
                     @auth
                         <!-- Si l'utilisateur est connecté -->
                         <x-dropdown-link :href="route('profile.edit')">
-                            {{ __('Profile') }}
+                            {{ __('Profil') }}
                         </x-dropdown-link>
 
                         <form method="POST" action="{{ route('logout') }}">
@@ -70,17 +70,17 @@
                             <x-dropdown-link :href="route('logout')"
                                 onclick="event.preventDefault();
                                     this.closest('form').submit();">
-                                {{ __('Log Out') }}
+                                {{ __('Deconnexion') }}
                             </x-dropdown-link>
                         </form>
                     @else
                         <!-- Si l'utilisateur n'est pas connecté -->
                         <x-dropdown-link :href="route('login')">
-                            {{ __('Login') }}
+                            {{ __('Se connecter') }}
                         </x-dropdown-link>
 
                         <x-dropdown-link :href="route('register')">
-                            {{ __('Register') }}
+                            {{ __('S\'inscrire') }}
                         </x-dropdown-link>
                     @endauth
                 </x-slot>
@@ -134,7 +134,7 @@
 
             <div class="mt-3 space-y-1">
                 <x-responsive-nav-link :href="route('profile.edit')">
-                    {{ __('Profile') }}
+                    {{ __('Profil') }}
                 </x-responsive-nav-link>
 
                 <!-- Authentication -->
@@ -144,7 +144,7 @@
                     <x-responsive-nav-link :href="route('logout')"
                             onclick="event.preventDefault();
                                         this.closest('form').submit();">
-                        {{ __('Log Out') }}
+                        {{ __('Déconnexion') }}
                     </x-responsive-nav-link>
                 </form>
             </div>

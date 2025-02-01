@@ -34,7 +34,7 @@
             <select class="form-control" id="section_id" name="section_id">
                 <option value="">Sélectionnez une section</option>
                 @foreach ($sections as $section)
-                <option value="{{ $section->id }}" {{ $module->section_id == $section->id ? 'selected' : '' }}>{{ $section->name }}</option>
+                <option value="{{ $section->id }}" {{ $module->section_id == $section->id ? 'selectionnée' : '' }}>{{ $section->name }}</option>
                 @endforeach
             </select>
         </div>
