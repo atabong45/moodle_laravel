@@ -2,7 +2,7 @@
 
 @section('content')
 <div class="container">
-    <h1>Edit Section</h1>
+    <h1>Editer une Section</h1>
 
     @if ($errors->any())
         <div class="alert alert-danger">
@@ -18,11 +18,11 @@
         @csrf
         @method('PUT')
         <div class="mb-3">
-            <label for="name" class="form-label">Name</label>
+            <label for="name" class="form-label">Nom</label>
             <input type="text" name="name" id="name" class="form-control" value="{{ $section->name }}" required>
         </div>
         <div class="mb-3">
-            <label for="course_id" class="form-label">Course</label>
+            <label for="course_id" class="form-label">Cours</label>
             <select name="course_id" id="course_id" class="form-control" required>
                 @foreach ($courses as $course)
                     <option value="{{ $course->id }}" {{ $course->id == $section->course_id ? 'selected' : '' }}>
@@ -31,7 +31,7 @@
                 @endforeach
             </select>
         </div>
-        <button type="submit" class="btn btn-success">Update</button>
+        <button type="submit" class="btn btn-success">Modifier</button>
     </form>
 </div>
 @endsection

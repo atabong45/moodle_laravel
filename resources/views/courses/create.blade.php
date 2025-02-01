@@ -1,14 +1,21 @@
 @extends('layouts.app')
 
 @section('content')
-<div class="container w-4/5 mt-10 mx-auto flex flex-col justify-center">
+<div class="container w-4/5 mt-10 mx-auto flex flex-col justify-center bg-white rounded-2xl p-6">
+      <!-- Bouton Retour -->
+      <div class="p-6">
+                    <a href="{{ url()->previous() }}" 
+                    class="text-blue-500 hover:text-blue-700 font-medium mb-4 inline-block">
+                        <i class="fas fa-arrow-left mr-1"></i> Retour
+                    </a>
+                </div>
     <h1 class='text-3xl font-bold'>
-        <a href="javascript:window.history.back();">
+        <!-- <a href="javascript:window.history.back();">
             <x-button class="!py-1 !px-2">
                 <i class="fa-regular fa-circle-left"></i>
             </x-button>
-        </a>
-        Create a course
+        </a> -->
+        Créer un cours
     </h1>
     <hr class="w-full h-[2px] mt-2 mb-4 bg-black" />
 
@@ -25,7 +32,7 @@
                     <div class="relative">
                         <input type="file" name="image" class="absolute inset-0 opacity-0 cursor-pointer" id="image" required onchange="previewImage(event)">
                         <button class='border border-primary py-1 px-2 text-primary rounded-md'>
-                            Choose an Image
+                            Choisir une Image
                         </button>
                     </div>
                 </div>
@@ -33,19 +40,19 @@
 
             <!-- Fullname Field -->
             <div class="flex items-center">
-                <label for="fullname" class="w-36">Fullname :</label>
+                <label for="fullname" class="w-36">Nom Complet :</label>
                 <input type="text" name="fullname" class="py-1 rounded-md w-full" id="fullname" required>
             </div>
 
             <!-- Shortname Field -->
             <div class="flex items-center">
-                <label for="shortname" class="w-36">Shortname :</label>
+                <label for="shortname" class="w-36">Surnom :</label>
                 <input type="text" name="shortname" class="py-1 rounded-md w-full" id="shortname" required>
             </div>
 
             <!-- Category Field -->
             <div class="flex items-center">
-                <label for="category" class="w-36">Category :</label>
+                <label for="category" class="w-36">Catégorie :</label>
                 <select name="category" class="py-1 rounded-md w-full" id="category" required>
                @foreach($categories as $category)
                     <option value="{{ $category->id }}">{{ $category->name }}</option>
@@ -55,32 +62,32 @@
 
             <!-- Summary Field -->
             <div class="flex items-top">
-                <label for="summary" class="w-36">Summary :</label>
+                <label for="summary" class="w-36">Résumé :</label>
                 <textarea name="summary" class="py-1 rounded-md w-full" id="summary" placeholder="Optional summary..."></textarea>
             </div>
 
             <!-- Number of sections Field -->
             <div class="flex items-center">
-                <label for="numsections" class="w-36">Number of sections :</label>
+                <label for="numsections" class="w-36">Nombre de sections :</label>
                 <input type="number" name="numsections" class="py-1 rounded-md w-full" id="numsections" required>
             </div>
 
             <!-- Start Date Field -->
             <div class="flex items-center">
-                <label for="startdate" class="w-36">Start Date :</label>
+                <label for="startdate" class="w-36">Date de début :</label>
                 <input type="date" name="startdate" class="py-1 rounded-md w-full" id="startdate" required>
             </div>
 
             <!-- End Date Field -->
             <div class="flex items-center">
-                <label for="enddate" class="w-36">End Date :</label>
+                <label for="enddate" class="w-36">Date de fin :</label>
                 <input type="date" name="enddate" class="py-1 rounded-md w-full" id="enddate">
             </div>
         </fieldset>
 
         <!-- Submit Button -->
         <x-button full='true' type="submit" class='mt-6'>
-            Create
+            Créer
         </x-button>
     </form>
 </div>

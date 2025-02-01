@@ -1,7 +1,14 @@
 @extends('layouts.app')
 
 @section('content')
-<div class="container w-4/5 mt-10 mx-auto bg-white p-6 flex flex-col justify-center">
+<div class="container w-4/5 mt-10 mx-auto bg-white p-6 flex flex-col justify-center rounded-2xl">
+      <!-- Bouton Retour -->
+      <div class="p-6">
+                    <a href="{{ url()->previous() }}" 
+                    class="text-blue-500 hover:text-blue-700 font-medium mb-4 inline-block">
+                        <i class="fas fa-arrow-left mr-1"></i> Retour
+                    </a>
+                </div>
     <h1 class='text-3xl font-bold'>Mes cours</h1>
     <hr class="w-full h-[2px] mt-2 mb-4 bg-black" />
     <div class='flex w-full gap-4 mb-6'>

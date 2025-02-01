@@ -7,8 +7,16 @@ $iconClasses = 'fa-solid fa-chevron-down text-blue-500 border border-blue-500 ro
 $iconActiveClasses = 'transform rotate-90 text-blue-700';
 @endphp
 
-<div class="container mx-auto py-8">
-    <h1 class="font-bold mb-6">{{ $course->fullname }}</h1>
+<div class="container mx-auto py-8 bg-white rounded-2xl p-6">
+      <!-- Bouton Retour -->
+      <div class="p-6">
+                    <a href="{{ url()->previous() }}" 
+                    class="text-blue-500 hover:text-blue-700 font-medium mb-4 inline-block">
+                        <i class="fas fa-arrow-left mr-1"></i> Retour
+                    </a>
+                </div>
+    <h1 class="font-bold mb-6 text-3xl">{{ $course->fullname }}</h1>
+    <hr class="mb-4 bg-black h-[2px] ">
 
     <div class="space-y-4 info-panels mb-6">
         <div class="border rounded-lg">    
@@ -40,7 +48,7 @@ $iconActiveClasses = 'transform rotate-90 text-blue-700';
             </h2>
             <div class="px-4 py-2 info-panel-content hidden">
                 @foreach ($section->modules as $module)
-                    <p class="mb-2"><strong>Document name:</strong> {{ $module->modname }}</p>
+                    <p class="mb-2"><strong>Nom du Document:</strong> {{ $module->modname }}</p>
                     <div class="flex justify-center items-center">
                         <a href="{{ $module->file_path }}" target="_blank" rel="noopener noreferrer"
                                 {{-- <a href="{{ route('modules.download', $module->id) }}"                                 --}}
@@ -59,10 +67,10 @@ $iconActiveClasses = 'transform rotate-90 text-blue-700';
     @endforeach
 
 
-    <a href="javascript:void(0);" id="add-section-btn" class="btn btn-primary">Add Section</a>
+    <a href="javascript:void(0);" id="add-section-btn" class="btn btn-primary text-white bg-blue-500 p-2 rounded">Ajouter une Section</a>
 
     <div id="add-section-form" class="container" style="display: none;">
-        <h1>Create Section for {{ $course->fullname }}</h1>
+        <h1 class=" font-bold text-xl">Créer une nouvelle Section pour {{ $course->fullname }}</h1>
 
         @if ($errors->any())
             <div class="alert alert-danger">
@@ -77,17 +85,17 @@ $iconActiveClasses = 'transform rotate-90 text-blue-700';
         <form action="{{ route('sections.store', ['course' => $course->id]) }}" method="POST">
             @csrf
             <div class="mb-3">
-                <label for="name" class="form-label">Name</label>
-                <input type="text" name="name" id="name" class="form-control" required>
+                <label for="name" class="form-label">Nom de la section</label>
+                <input type="text" name="name" id="name" class="form-control rounded" required>
             </div>
             <input type="hidden" name="course_id" value="{{ $course->id }}">
-            <button type="submit" class="btn btn-success">Create</button>
+            <button type="submit" class="btn btn-success">Créer</button>
         </form>
     </div>
 
     <div class="mt-4">
         <a href="{{ route('courses.index') }}" class="items-center bg-blue-500 hover:bg-blue-600 text-white py-2 px-4 rounded">
-            <i class="fa-solid fa-arrow-left mr-2"></i> Back to Courses
+            <i class="fa-solid fa-arrow-left mr-2"></i> Retour à la page des cours
         </a>
     </div>
 </div>

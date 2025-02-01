@@ -22,13 +22,13 @@
         @include('layouts.navigation')
 
         @if(session('error'))
-            <div class="alert alert-danger">
+            <div class="bg-red-500 text-white p-3 rounded-md alert alert-danger">
                 {{ session('error') }}
             </div>
         @endif
 
         @if(session('success'))
-            <div class="alert alert-success">
+            <div class="bg-green-500 text-white p-3 rounded-md alert alert-success">
                 {{ session('success') }}
             </div>
         @endif
@@ -51,4 +51,9 @@
         </main>
     </div>
 </body>
+<script>
+    setTimeout(() => {
+        document.querySelectorAll('.alert-danger').forEach(el => el.style.display = 'none');
+    }, 5000); // Disparaît après 5 secondes
+</script>
 </html>

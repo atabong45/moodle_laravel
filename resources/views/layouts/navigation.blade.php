@@ -40,7 +40,7 @@
                 @csrf 
                 <button type="submit" @click="isSyncing = true; setTimeout(() => isSyncing = false, 2000)" :class="{'animate-spin': isSyncing}" class="inline-flex items-center ml-[450px] py-6 border border-transparent text-sm leading-4 font-medium rounded-md text-gray-500 bg-white hover:text-gray-700 focus:outline-none transition ease-in-out duration-150 me-2">
                     <i class="fas fa-sync-alt"></i>
-                </button>
+                </button> 
             </form>
 
             <!-- Settings Dropdown -->
