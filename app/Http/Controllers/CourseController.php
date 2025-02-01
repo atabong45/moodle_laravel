@@ -38,7 +38,7 @@ class CourseController extends Controller
     //             'startdate' => $moodleCourse['startdate'] == 0 ? now() : $moodleCourse['startdate'],
     //             'enddate' => $moodleCourse['enddate'] == 0 ? now() : $moodleCourse['enddate'],
     //             ]
-    //             );  
+    //             );
     // }
 
         $courses = Course::when($search, function ($query, $search) {
