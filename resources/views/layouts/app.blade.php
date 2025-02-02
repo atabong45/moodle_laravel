@@ -25,13 +25,13 @@
         @include('layouts.navigation')
 
         @if(session('error'))
-            <div class="bg-red-500 text-white p-3 rounded-md alert alert-danger">
+            <div class="bg-red-500 text-white p-3 text-center rounded-md alert alert-danger">
                 {{ session('error') }}
             </div>
         @endif
 
         @if(session('success'))
-            <div class="bg-green-500 text-white p-3 rounded-md alert alert-success">
+            <div class="bg-green-500 text-white p-3 text-center rounded-md alert alert-success">
                 {{ session('success') }}
             </div>
         @endif
@@ -54,16 +54,30 @@
         <main class="py-8">
 
             <!-- Beadcrumb -->
-             <div class = "container w-4/5  mx-auto flex flex-col justify-center">
+             <div class = "container  mx-auto flex flex-col justify-center">
                
                 @php
                     $segments = request()->segments();
                     $breadcrumbs = [['name' => 'Accueil', 'url' => url('/')]];
                     $path = '';
 
+                    $translations = [
+            'dashboard' => 'Tableau de bord',
+            'courses' => 'Cours',
+            'sections' => 'Sections',
+            'create' => 'Créer',
+            'edit' => 'Modifier',
+            'users' => 'Utilisateurs',
+            'profile' => 'Profil',
+            'settings' => 'Paramètres',
+            'submissions' =>'Soumissions',
+            'assignments' => 'Evaluations'
+        ];
+
                     foreach ($segments as $segment) {
                         $path .= '/' . $segment;
-                        $breadcrumbs[] = ['name' => ucfirst(str_replace('-', ' ', $segment)), 'url' => url($path)];
+                        $title = $translations[$segment] ?? ucfirst(str_replace('-', ' ', $segment));
+                        $breadcrumbs[] = ['name' => $title, 'url' => url($path)];
                     }
                 @endphp
 
