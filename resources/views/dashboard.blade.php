@@ -146,7 +146,9 @@
         const response = await fetch('/events');
         const events = await response.json();
 
-        console.log(events);
+        alert('errr')
+
+        console.log('Events:', events);
 
         events.forEach(event => {
             const eventElement = document.createElement('div');
@@ -348,4 +350,30 @@
         });
     });
 </script>
+
+<script>
+    document.getElementById('eventForm').addEventListener('submit', function(event) {
+        event.preventDefault(); // Prevent default form submission
+
+        let formData = new FormData(this);
+
+        fetch('/events', {
+            method: 'POST',
+            body: formData,
+            headers: {
+                'X-CSRF-TOKEN': document.querySelector('input[name="_token"]').value
+            }
+        })
+        .then(response => response.json())
+        .then(data => {
+            console.log('Success:', data);
+            alert('Event created successfully!');
+        })
+        .catch(error => {
+            console.error('Error:', error);
+            alert('An error occurred.');
+        });
+    });
+</script>
+
 @endsection
