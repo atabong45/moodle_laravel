@@ -39,11 +39,11 @@
             <form id="syncForm" action="{{ route('synchronisation') }}" method="POST">
                 @csrf 
                 <div class="inline-flex items-center ml-[450px] py-5 border border-transparent text-sm leading-4 font-medium rounded-md text-gray-500 bg-white">
-                <button type="submit" @click="isSyncing = true; setTimeout(() => isSyncing = false, 2000)" :class="{'animate-spin': isSyncing}" class=
-                    " hover:text-gray-700 focus:outline-none transition ease-in-out duration-150 me-2">
-                    <i class="fas fa-sync-alt"></i>     
-                </button> 
-                <span>Actualiser </span>
+                    <button type="submit" @click="isSyncing = true; setTimeout(() => isSyncing = false, 2000)" :class="{'animate-spin': isSyncing}" class=
+                        " hover:text-gray-700 focus:outline-none transition ease-in-out duration-150 me-2">
+                        <i class="fas fa-sync-alt"></i>     
+                    </button> 
+                    <span>Actualiser </span>
                 </div>
             </form>
 

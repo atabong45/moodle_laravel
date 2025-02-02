@@ -69,8 +69,6 @@ class CourseController extends Controller
             return redirect()->route('courses.create')->with('error', 'Course not created ! Check parameters');
         }
 
-
-
         // Save the course in the local database
         Course::create($validated);
 
