@@ -93,22 +93,22 @@ class SynchronisationController extends Controller
 
 
             // Synchronisation des utilisateurs
-            $moodleUsers = $this->moodleUserService->getUsers();
-            $moodleUserIds = array_column($moodleUsers['users'], 'id');
+            // $moodleUsers = $this->moodleUserService->getUsers();
+            // $moodleUserIds = array_column($moodleUsers['users'], 'id');
 
-            foreach ($moodleUsers['users'] as $moodleUser) {
-                User::updateOrCreate(
-                    ['id' => $moodleUser['id']],
-                    [
-                        'name' => $moodleUser['fullname'],
-                        'email' => $moodleUser['email'],
-                        'password' => bcrypt('defaultpassword'), // Vous pouvez gérer les mots de passe différemment
-                        'profile_picture' => $moodleUser['profileimageurl'] ?? null,
-                    ]
-                );
-            }
+            // foreach ($moodleUsers['users'] as $moodleUser) {
+            //     User::updateOrCreate(
+            //         ['id' => $moodleUser['id']],
+            //         [
+            //             'name' => $moodleUser['fullname'],
+            //             'email' => $moodleUser['email'],
+            //             'password' => bcrypt('defaultpassword'), // Vous pouvez gérer les mots de passe différemment
+            //             'profile_picture' => $moodleUser['profileimageurl'] ?? null,
+            //         ]
+            //     );
+            // }
 
-            $localUsers = User::whereNotIn('id', $moodleUserIds)->delete();
+            //$localUsers = User::whereNotIn('id', $moodleUserIds)->delete();
 
            // Synchronisation des sections depuis Moodle vers le client
             $moodleCourses = $this->moodleCourseService->getAllCourses();
