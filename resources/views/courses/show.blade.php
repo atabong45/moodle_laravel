@@ -27,12 +27,12 @@ $iconActiveClasses = 'transform rotate-90 text-blue-700';
                 </button>
             </h2>
             <div class="px-4 py-2 info-panel-content hidden">
-                <p class="mb-2"><strong>Short Name:</strong> {{ $course->shortname }}</p>
+                <p class="mb-2"><strong>Nom:</strong> {{ $course->shortname }}</p>
                 <p class="mb-2"><strong>Description :</strong> {{ $course->summary }}</p>
                 <p class="mb-2"><strong>Sections:</strong> {{ $course->numsections }}</p>
-                <p class="mb-2"><strong>Start Date:</strong> {{ $course->startdate->format('d/m/Y') }}</p>
-                <p class="mb-2"><strong>End Date:</strong> {{ $course->enddate ? $course->enddate->format('d/m/Y') : 'Not Defined' }}</p>
-                <p class="mb-2"><strong>Teacher:</strong> {{ $course->teacher->username ?? 'admin User' }}</p>
+                <p class="mb-2"><strong>Date Debut:</strong> {{ $course->startdate->format('d/m/Y') }}</p>
+                <p class="mb-2"><strong>Date Fin:</strong> {{ $course->enddate ? $course->enddate->format('d/m/Y') : 'Not Defined' }}</p>
+                <p class="mb-2"><strong>Enseigant :</strong> {{ $course->teacher->username ?? 'admin' }}</p>
             </div>
         </div>
     </div>
@@ -48,18 +48,18 @@ $iconActiveClasses = 'transform rotate-90 text-blue-700';
             </h2>
             <div class="px-4 py-2 info-panel-content hidden">
                 @foreach ($section->modules as $module)
-                    <p class="mb-2"><strong>Nom du Document:</strong> {{ $module->modname }}</p>
-                    <div class="flex justify-center items-center">
-                        <a href="{{ $module->file_path }}" target="_blank" rel="noopener noreferrer"
-                                {{-- <a href="{{ route('modules.download', $module->id) }}"                                 --}}
-                            download
-                            class="inline-flex items-center px-4 py-2 bg-blue-600 hover:bg-blue-700 
-                                text-white font-medium rounded-lg transition duration-150 ease-in-out
-                                shadow-md hover:shadow-lg space-x-2">
-                            <i class="fas fa-file-download h-5 w-5"></i>
-                            <span>Télécharger le PDF</span>
-                        </a>
-                    </div>
+                    <p class="mb-2"><strong>Nom du Document:</strong> {{ $module->name }}</p>
+                    @if ($module->modname == 'resource')
+                        <div class="flex justify-center items-center">
+                            <a href="{{ $module->file_path }}" target="_blank" rel="noopener noreferrer" download
+                                class="inline-flex items-center px-4 py-2 bg-blue-600 hover:bg-blue-700 
+                                    text-white font-medium rounded-lg transition duration-150 ease-in-out
+                                    shadow-md hover:shadow-lg space-x-2">
+                                <i class="fas fa-file-download h-5 w-5"></i>
+                                <span>Télécharger le PDF</span>
+                            </a>
+                        </div>
+                    @endif
                 @endforeach
             </div>
         </div>
@@ -68,7 +68,7 @@ $iconActiveClasses = 'transform rotate-90 text-blue-700';
 
 
     <a href="javascript:void(0);" id="add-section-btn" class="btn btn-primary text-white bg-blue-500 p-2 rounded">Ajouter une Section</a>
-    <a href="{{ route('sections.create', ['course' => $course->id]) }}" id="add-section-btn" class="btn btn-primary text-white bg-blue-500 p-2 rounded">Ajouter une Section</a>
+    {{-- <a href="{{ route('sections.create', ['course' => $course->id]) }}" id="add-section-btn" class="btn btn-primary text-white bg-blue-500 p-2 rounded">Ajouter une Section</a> --}}
 
     <div id="add-section-form" class="container" style="display: none;">
         <h1 class=" font-bold text-xl">Créer une nouvelle Section pour {{ $course->fullname }}</h1>

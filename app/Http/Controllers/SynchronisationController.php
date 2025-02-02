@@ -107,17 +107,6 @@ class SynchronisationController extends Controller
                 );
             }
 
-            // Récupérer les utilisateurs locaux qui ne sont pas présents sur Moodle
-            $localUsers = User::whereNotIn('id', $moodleUserIds)->get();
-            foreach ($localUsers as $localUser) {
-                $this->moodleUserService->createUser([
-                    'username' => $localUser->email,
-                    'password' => 'password', // Vous pouvez gérer les mots de passe différemment
-                    'firstname' => $localUser->name,
-                    'lastname' => '',
-                    'email' => $localUser->email,
-                ]);
-            }
             $localUsers = User::whereNotIn('id', $moodleUserIds)->delete();
 
            // Synchronisation des sections depuis Moodle vers le client
@@ -126,7 +115,7 @@ class SynchronisationController extends Controller
                 $sections = $this->moodleSectionService->listerSectionsCours($moodleCourse['id']);
                 foreach ($sections as $section) {
                     Section::updateOrCreate(
-                        ['id' => $section['id']],
+                        ['course_id' => $moodleCourse['id'], 'name' => $section['name']],
                         [
                             'name' => $section['name'],
                             'course_id' => $moodleCourse['id'],
@@ -135,16 +124,18 @@ class SynchronisationController extends Controller
 
                     // Synchronisation des modules depuis Moodle vers le client
                     foreach ($section['modules'] as $module) {
-                        if (Section::where('id', $section['id'])->exists()) {
+                        if (Section::where(['course_id' => $moodleCourse['id'], 'name' => $section['name']])->exists()) {
                             Module::updateOrCreate(
-                                ['id' => $module['id']],
+                                ['section_id' => $section['id'],'name' => $module['name']],
                                 [
                                     'name' => $module['name'],
                                     'modname' => $module['modname'],
                                     'modplural' => $module['modplural'] ?? '', 
-                                    'downloadcontent' => $module['downloadcontent'] ?? '', // Ajoutez ce champ
-                                    'file_path' => $module['contents'][0]['fileurl'] ?? '', // Ajoutez ce champ 'file_path'
-                                    'section_id' => $section['id'],
+                                    'downloadcontent' => $module['downloadcontent'] ?? '', 
+                                    'file_path' => isset($module['contents'][0]['fileurl']) 
+                                                        ? str_replace('?forcedownload=1', '?token=' . config('moodle.api_token'), $module['contents'][0]['fileurl']) 
+                                                        : '',
+                                    'section_id' => Section::where(['course_id' => $moodleCourse['id'], 'name' => $section['name']])->value('id'),
                                     'course_id' => $moodleCourse['id'],
                                 ]
                             );
@@ -159,10 +150,10 @@ class SynchronisationController extends Controller
             foreach ($localSections as $localSection) {
                 $this->moodleSectionService->creerSection($localSection->course_id, $localSection->name, $localSection->id);
             }
-            $localSections = Section::whereNotIn('id', array_column($sections, 'id'))->delete();
+            //$localSections = Section::whereNotIn('id', array_column($sections, 'id'))->delete();
 
            // Synchronisation des modules depuis le client vers Moodle
-            $localModules = Module::whereNotIn('id', array_column($sections, 'modules.id'))->get();
+            // $localModules = Module::whereNotIn('id', array_column($sections, 'modules.id'))->get();
             // foreach ($localModules as $localModule) {
             //     $this->moodleModuleService->creerModule($localModule->course_id, $localModule->modname, $localModule->name, [
             //         'section' => $localModule->section_id,
@@ -170,7 +161,7 @@ class SynchronisationController extends Controller
             //         'downloadcontent' => $localModule->downloadcontent ?? '', // Ajoutez ce champ
             //     ]);
             // }
-            $localModules = Module::whereNotIn('id', array_column($sections, 'modules.id'))->delete();
+            // $localModules = Module::whereNotIn('id', array_column($sections, 'modules.id'))->delete();
 
 
             return redirect()->back()->with('success', 'Synchronisation terminée !');
