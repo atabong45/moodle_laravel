@@ -56,6 +56,7 @@ class SynchronisationController extends Controller
                     ]
                 );
             }
+            $localCategories = Category::whereNotIn('id', $moodleCategoryIds)->delete();
 
             // Synchronisation des cours
             $moodleCourses = $this->moodleCourseService->getAllCourses();
