@@ -29,12 +29,18 @@
                 {{ session('error') }}
             </div>
         @endif
+        @if(session('alert'))
+            <div class="bg-orange-400 text-white p-2 text-center rounded-md alert alert-danger">
+                {{ session('alert') }}
+            </div>
+        @endif
 
         @if(session('success'))
             <div class="bg-green-500 text-white p-2 text-center rounded-md alert alert-success">
                 {{ session('success') }}
             </div>
         @endif
+
 
 
         <!-- En-tête -->

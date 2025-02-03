@@ -42,7 +42,7 @@ class SynchronisationController extends Controller
         try {
             // Vérifier la disponibilité du serveur Moodle
             if (!$this->moodleCourseService->isServerAvailable()) {
-                return redirect()->back()->with('error', 'Le serveur Moodle n\'est pas disponible.');
+                return redirect()->back()->with('alert', 'Le serveur Moodle n\'est pas disponible.');
             }
 
             // Synchronisation des catégories

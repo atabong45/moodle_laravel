@@ -83,9 +83,9 @@
                             {{ __('Se connecter') }}
                         </x-dropdown-link>
 
-                        <x-dropdown-link :href="route('register')">
+                        <!-- <x-dropdown-link :href="route('register')">
                             {{ __('S\'inscrire') }}
-                        </x-dropdown-link>
+                        </x-dropdown-link> -->
                     @endauth
                 </x-slot>
             </x-dropdown>
