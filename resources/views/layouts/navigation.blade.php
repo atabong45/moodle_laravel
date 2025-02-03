@@ -24,7 +24,7 @@
                     <x-nav-link :href="route('dashboard')" :active="request()->routeIs('dashboard')">
                         {{ __('Tableau de bord') }}
                     </x-nav-link>
-                    
+
                     <!-- Admin Navigation -->
                     @role('ROLE_ADMIN')
                     <div class="hidden space-x-8 sm:-my-px sm:ml-10 sm:flex">
@@ -37,10 +37,10 @@
             </div>
 
             <form id="syncForm" action="{{ route('synchronisation') }}" method="POST">
-                @csrf 
+                @csrf
                 <button type="submit" @click="isSyncing = true; setTimeout(() => isSyncing = false, 2000)" :class="{'animate-spin': isSyncing}" class="inline-flex items-center ml-[450px] py-6 border border-transparent text-sm leading-4 font-medium rounded-md text-gray-500 bg-white hover:text-gray-700 focus:outline-none transition ease-in-out duration-150 me-2">
                     <i class="fas fa-sync-alt"></i>
-                </button> 
+                </button>
             </form>
 
             <!-- Settings Dropdown -->
@@ -85,6 +85,20 @@
                     @endauth
                 </x-slot>
             </x-dropdown>
+            </div>
+
+            <!-- About -->
+            <div class="flex items-center text-gray-400 hover:text-gray-500">
+                <a href="/about">
+                    <i class="fas fa-info-circle"></i>
+                </a>
+            </div>
+
+            <!-- Contact -->
+            <div class="flex items-center text-gray-400 hover:text-gray-500">
+                <a href="/contact">
+                    <i class="fas fa-envelope"></i>
+                </a>
             </div>
 
             <!-- Hamburger -->

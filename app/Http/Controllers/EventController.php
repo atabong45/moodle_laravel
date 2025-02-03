@@ -43,7 +43,10 @@ class EventController extends Controller
             'category_id' => $request->type === 'categorie' ? $request->category_id : null,
         ]);
 
-        $this->moodleEventService->createEvent($event);
+        if ($this->moodleEventService->isServerAvailable()) {
+            $this->moodleEventService->createEvent($event);
+            $event->delete();
+        }
 
         return response()->json(['message' => 'Event created successfully and synced with Moodle!', 'event' => $event]);
     }

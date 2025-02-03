@@ -146,10 +146,6 @@
         const response = await fetch('/events');
         const events = await response.json();
 
-        alert('errr')
-
-        console.log('Events:', events);
-
         events.forEach(event => {
             const eventElement = document.createElement('div');
             eventElement.className = `event event-${event.id} text-sm`;
@@ -339,6 +335,10 @@
         const modal = document.getElementById('modal');
         const closeModalButton = document.getElementById('closeModal');
         const form = document.getElementById('eventForm');
+
+        form.addEventListener('submit', function (event) {
+            modal.classList.add('hidden');
+        });
 
         function resetForm() {
             form.reset();

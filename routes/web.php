@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Controllers\AboutController;
 use App\Http\Controllers\ProfileController;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\AdminController;
@@ -11,6 +12,7 @@ use App\Http\Controllers\SectionController;
 use App\Http\Controllers\SubmissionController;
 use App\Http\Controllers\UserController;
 use App\Http\Controllers\CategoryController;
+use App\Http\Controllers\ContactController;
 use App\Http\Controllers\EventController;
 use App\Http\Controllers\QuestionController;
 use App\Http\Controllers\SubmissionQuestionController;
@@ -113,7 +115,14 @@ Route::middleware('auth')->group(function () {
     Route::get('/events', [EventController::class, 'index'])->name('events.index');
     Route::post('/events', [EventController::class, 'store'])->name('events.store');
     Route::delete('/events/{id}', [EventController::class, 'destroy'])->name('events.destroy');;
+
+    // Contact
+    Route::get('/contact', [ContactController::class, 'index'])->name('contact.index');
+    Route::post('/contact', [ContactController::class, 'send'])->name('contact.send');
 });
+
+// About
+Route::view('/about', 'about')->name('about');
 
 Route::middleware(['auth', 'role:ROLE_STUDENT'])->group(function () {
     Route::get('assignments/{assignment}/compose', [AssignmentController::class, 'compose'])

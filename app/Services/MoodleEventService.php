@@ -96,4 +96,25 @@ class MoodleEventService
             return false;
         }
     }
+
+    public function isServerAvailable(): bool
+    {
+        try {
+            $response = Http::get($this->apiUrl, [
+                'wstoken' => $this->token,
+                'wsfunction' => 'core_webservice_get_site_info',
+                'moodlewsrestformat' => 'json'
+            ]);
+
+            if ($response->successful()) {
+                return true;
+            } else {
+                Log::error('Moodle API Error (isServerAvailable): ' . $response->body());
+                return false;
+            }
+        } catch (\Exception $e) {
+            Log::error('Moodle API Error (isServerAvailable): ' . $e->getMessage());
+            return false;
+        }
+    }
 }

@@ -208,7 +208,7 @@ class MoodleCourseService
         }
     }
 
-        public function isServerAvailable(): bool
+    public function isServerAvailable(): bool
     {
         try {
             $response = Http::get($this->apiUrl, [
