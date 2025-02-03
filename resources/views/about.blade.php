@@ -26,7 +26,7 @@
         pour l'éducation en ligne. Nous croyons que l'apprentissage doit être interactif, engageant et disponible pour tous.
     </p>
 
-    <h2 class="text-2xl font-bold mt-6">Notre Équipe</h2>
+    <!-- <h2 class="text-2xl font-bold mt-6">Notre Équipe</h2>
     <hr class="w-3/5 h-[3px] mb-4 bg-black" />
     <div class="grid grid-cols-3 gap-6">
         <div class="text-center">
@@ -44,13 +44,13 @@
             <h3 class="text-xl font-bold mt-3">Pierre Martin</h3>
             <p class="text-gray-600">Développeur principal</p>
         </div>
-    </div>
+    </div> -->
 
     <h2 class="text-2xl font-bold mt-6">Contact</h2>
     <hr class="w-3/5 h-[3px] mb-4 bg-black" />
     <p class="text-lg">
         Si vous avez des questions, n'hésitez pas à nous contacter à
-        <a href="/contact" class="text-blue-500 hover:underline">ouendeufranck@gmail</a>.
+        <a href="mailto:ouendeufranck@gmail.com" class="text-blue-500 hover:underline">ouendeufranck@gmail.com</a>.
     </p>
 </div>
 @endsection

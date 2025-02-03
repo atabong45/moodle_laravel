@@ -25,22 +25,28 @@
         @include('layouts.navigation')
 
         @if(session('error'))
-            <div class="bg-red-500 text-white p-3 rounded-md alert alert-danger">
+            <div class="bg-red-500 text-white p-2 text-center rounded-md alert alert-danger">
                 {{ session('error') }}
+            </div>
+        @endif
+        @if(session('alert'))
+            <div class="bg-orange-400 text-white p-2 text-center rounded-md alert alert-danger">
+                {{ session('alert') }}
             </div>
         @endif
 
         @if(session('success'))
-            <div class="bg-green-500 text-white p-3 rounded-md alert alert-success">
+            <div class="bg-green-500 text-white p-2 text-center rounded-md alert alert-success">
                 {{ session('success') }}
             </div>
         @endif
 
 
+
         <!-- En-tête -->
         @if (isset($header))
             <header class="bg-white shadow">
-                <div class="max-w-7xl mx-auto py-6 px-4 sm:px-6 lg:px-8">
+                <div class="max-w-7xl mx-auto py-2 px-4 sm:px-6 lg:px-8">
                     {{ $header }}
                 </div>
             </header>
@@ -51,19 +57,33 @@
 
 
         <!-- Contenu principal -->
-        <main class="py-8">
+        <main class="py-2">
 
             <!-- Beadcrumb -->
-             <div class = "container w-4/5  mx-auto flex flex-col justify-center">
+             <div class = "container  mx-auto flex flex-col justify-center">
                
                 @php
                     $segments = request()->segments();
                     $breadcrumbs = [['name' => 'Accueil', 'url' => url('/')]];
                     $path = '';
 
+                    $translations = [
+            'dashboard' => 'Tableau de bord',
+            'courses' => 'Cours',
+            'sections' => 'Sections',
+            'create' => 'Créer',
+            'edit' => 'Modifier',
+            'users' => 'Utilisateurs',
+            'profile' => 'Profil',
+            'settings' => 'Paramètres',
+            'submissions' =>'Soumissions',
+            'assignments' => 'Evaluations'
+        ];
+
                     foreach ($segments as $segment) {
                         $path .= '/' . $segment;
-                        $breadcrumbs[] = ['name' => ucfirst(str_replace('-', ' ', $segment)), 'url' => url($path)];
+                        $title = $translations[$segment] ?? ucfirst(str_replace('-', ' ', $segment));
+                        $breadcrumbs[] = ['name' => $title, 'url' => url($path)];
                     }
                 @endphp
 
@@ -93,6 +113,9 @@
 <script>
     setTimeout(() => {
         document.querySelectorAll('.alert-danger').forEach(el => el.style.display = 'none');
-    }, 5000); // Disparaît après 5 secondes
+    }, 3000); // Disparaît après 5 secondes
+    setTimeout(() => {
+        document.querySelectorAll('.alert-success').forEach(el => el.style.display = 'none');
+    }, 3000); // Disparaît après 5 secondes
 </script>
 </html>

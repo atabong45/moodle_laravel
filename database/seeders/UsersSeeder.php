@@ -11,6 +11,28 @@ class UsersSeeder extends Seeder
 {
     public function run()
     {
+                // Créer un utilisateur enseignant
+        $teacher1 = User::firstOrCreate(
+            [
+                'email' => 'teacher1@example.com',
+            ],
+            [
+                'name' => 'Enseignant 1',
+                'password' => Hash::make('teacher12345'), // Mot de passe sécurisé
+            ]
+        );
+
+                // Créer un utilisateur enseignant
+        $teacher2 = User::firstOrCreate(
+            [
+                'email' => 'teacher2@example.com',
+            ],
+            [
+                'name' => 'Enseignant 2',
+                'password' => Hash::make('teacher12345'), // Mot de passe sécurisé
+            ]
+        );
+
         // Créer un utilisateur étudiant
         $student1 = User::firstOrCreate(
             [
@@ -40,16 +62,6 @@ class UsersSeeder extends Seeder
             ]
         );
 
-        // Créer un utilisateur enseignant
-        $teacher = User::firstOrCreate(
-            [
-                'email' => 'teacher@example.com',
-            ],
-            [
-                'name' => 'Enseignant 1',
-                'password' => Hash::make('teacher12345'), // Mot de passe sécurisé
-            ]
-        );
 
         // Assigner les rôles à l'étudiant
         $studentRole = 'ROLE_STUDENT';
@@ -60,7 +72,8 @@ class UsersSeeder extends Seeder
 
         // Assigner les rôles à l'enseignant
         $teacherRole = 'ROLE_TEACHER';
-        $teacher->assignRole($teacherRole);
+        $teacher1->assignRole($teacherRole);
+        $teacher1->assignRole($teacherRole);
 
         $this->command->info('Utilisateur étudiant et enseignant créés avec succès.');
     }

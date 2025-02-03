@@ -32,7 +32,12 @@ class MoodleSectionService
             $response = Http::get($this->apiUrl, $params);
             return $response->json();
         } catch (\Exception $e) {
+
+            Log::error('Erreur API Moodle (listerSectionsCours): ' . $e->getMessage(), [
+                'file' => storage_path('logs/laravel.log')
+            ]);
             Log::error('Erreur API Moodle (listerSectionsCours): ' . $e->getMessage());
+
             return [];
         }
     }
