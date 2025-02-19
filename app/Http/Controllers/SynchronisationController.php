@@ -56,7 +56,7 @@ class SynchronisationController extends Controller
                     ]
                 );
             }
-            $localCategories = Category::whereNotIn('id', $moodleCategoryIds)->delete();
+            //$localCategories = Category::whereNotIn('id', $moodleCategoryIds)->delete();
 
             // Synchronisation des cours
             $moodleCourses = $this->moodleCourseService->getAllCourses();
@@ -127,7 +127,7 @@ class SynchronisationController extends Controller
                     foreach ($section['modules'] as $module) {
                         if (Section::where(['course_id' => $moodleCourse['id'], 'name' => $section['name']])->exists()) {
                             Module::updateOrCreate(
-                                ['section_id' => $section['id'],'name' => $module['name']],
+                                ['section_id' => $section['id'],'name' => $module['name'],'modname' => $module['modname']],
                                 [
                                     'name' => $module['name'],
                                     'modname' => $module['modname'],
