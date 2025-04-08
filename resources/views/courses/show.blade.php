@@ -68,8 +68,7 @@ $iconActiveClasses = 'transform rotate-90 text-blue-700';
 
 
     @if(Auth::user()->hasRole('ROLE_TEACHER'))
-    <a href="javascript:void(0);" id="add-section-btn" class="btn btn-primary text-white bg-blue-500 p-2 rounded">Ajouter une Section</a>
-    <a href="{{ route('sections.create', ['course' => $course->id]) }}" id="add-section-btn" class="btn btn-primary text-white bg-blue-500 p-2 rounded">Ajouter une Section</a>
+        <a href="javascript:void(0);" id="add-section-btn" class="btn btn-primary text-white bg-blue-500 p-2 rounded">Ajouter une Section</a>
     @endif
     
     @if(Auth::user()->hasRole('ROLE_STUDENT'))

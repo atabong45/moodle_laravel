@@ -185,15 +185,12 @@ class SynchronisationController extends Controller
             }
             
             $success = $this->executeAction($entry['action'], $entry['data']);
-            Log::info('Action a traitée : ' . $entry['action'] . ' donnee ' . json_encode($entry['data']));
             
             if ($success) {
                 $successfulActions[] = $entry;
-                Log::info('success');
             } else {
                 // Écrire les actions échouées dans le fichier temporaire
                 fwrite($tempFile, $line);
-                Log::info('echec');
             }
         }
         
@@ -223,8 +220,7 @@ class SynchronisationController extends Controller
                     $course->numsections = $data['numsections'];
                     $course->startdate = $data['startdate'];
                     $course->enddate = $data['enddate'];
-                    Log::info(' creation du cour avec les donnees data ' . json_encode($data));
-
+                    
                     return $this->moodleCourseService->createCourse($course);
                     
                 case 'course_update':
@@ -260,4 +256,6 @@ class SynchronisationController extends Controller
             return redirect()->back()->with('alert', 'Le serveur Moodle n\'est pas disponible.');
         }
     }
+
+
 }

@@ -7,6 +7,7 @@ use Illuminate\Database\Eloquent\Model;
 class Course extends Model
 {
     protected $fillable = [
+        'moodle_id',
         'fullname',
         'shortname',
         'summary',

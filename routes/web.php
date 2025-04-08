@@ -21,10 +21,12 @@ use App\Http\Controllers\SynchronisationController;
 use App\Models\Category;
 use App\Models\Course;
 
+use App\Http\Controllers\WelcomeController;
+
+
 // Welcome route (accessible sans authentification)
-Route::get('/', function () {
-    return view('welcome');
-})->name('home');
+Route::get('/', [WelcomeController::class, 'index'])->name('home');
+
 
 // Group of routes requiring authentication
 Route::middleware('auth')->group(function () {
@@ -130,6 +132,12 @@ Route::middleware(['auth', 'role:ROLE_STUDENT'])->group(function () {
     Route::post('assignments/{assignment}/submit', [AssignmentController::class, 'submit'])
         ->name('assignments.submit');
 });
+
+
+
+
+
+
 
 // Include authentication routes
 require __DIR__.'/auth.php';

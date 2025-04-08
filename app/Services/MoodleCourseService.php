@@ -5,12 +5,15 @@ namespace App\Services;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Log;
 use App\Models\Course;
+use App\Models\Category;
+use Illuminate\Support\Facades\Storage;
 
 class MoodleCourseService
 {
     protected string $apiUrl;
     protected string $token;
     protected array $defaultParams;
+    protected string $logFilePath;
 
     public function __construct()
     {
@@ -20,6 +23,71 @@ class MoodleCourseService
             'wstoken' => $this->token,
             'moodlewsrestformat' => 'json'
         ];
+
+        $this->logFilePath = storage_path('logs/moodle_actions.txt');
+    }
+
+    /**
+     * Log an action to the sync file
+     */
+    public function logAction(string $action, array $data): void
+    {
+        $logEntry = [
+            'timestamp' => now()->toIso8601String(),
+            'action' => $action,
+            'data' => $data
+        ];
+        
+        $logLine = json_encode($logEntry) . PHP_EOL;
+        file_put_contents($this->logFilePath, $logLine, FILE_APPEND);
+        
+        Log::info("Moodle action logged: {$action}");
+    }
+
+    /**
+     * Log course creation action
+     */
+    public function logCourseCreation(Course $course): void
+    {
+        $courseData = [
+            'id' => $course->id,
+            'fullname' => $course->fullname,
+            'shortname' => $course->shortname,
+            'category_id' => $course->category_id,
+            'summary' => $course->summary,
+            'numsections' => $course->numsections,
+            'startdate' => $course->startdate,
+            'enddate' => $course->enddate
+        ];
+        
+        $this->logAction('course_create', $courseData);
+    }
+
+    /**
+     * Log course update action
+     */
+    public function logCourseUpdate(Course $course): void
+    {
+        $courseData = [
+            'id' => $course->id,
+            'fullname' => $course->fullname,
+            'shortname' => $course->shortname,
+            'category_id' => $course->category_id,
+            'summary' => $course->summary,
+            'numsections' => $course->numsections,
+            'startdate' => $course->startdate,
+            'enddate' => $course->enddate
+        ];
+        
+        $this->logAction('course_update', $courseData);
+    }
+
+    /**
+     * Log course deletion action
+     */
+    public function logCourseDeletion(Course $course): void
+    {
+        $this->logAction('course_delete', ['id' => $course->id]);
     }
 
     /**
@@ -34,6 +102,7 @@ class MoodleCourseService
             $response = Http::get($this->apiUrl, $params);
 
             $data = $response->json();
+
 
             // Check if the response contains an error
             if (isset($data['errorcode']) || isset($data['exception'])) {
@@ -53,6 +122,7 @@ class MoodleCourseService
      */
     public function createCourse(Course $course)
     {
+        Log::Info('dans createCourse');
         try {
             $params = array_merge($this->defaultParams, [
                 'wsfunction' => 'core_course_create_courses',
@@ -60,7 +130,7 @@ class MoodleCourseService
                     [
                         'fullname' => $course->fullname,
                         'shortname' => $course->shortname,
-                        'categoryid' => $course->category_id,
+                        'categoryid' => Category::where('id', $course->category_id)->value('moodle_id'), // Récupérer le moodle_id
                         'summary' => $course->summary,
                         'startdate' => $course->startdate ? strtotime($course->startdate) : null,
                         'enddate' => $course->enddate ? strtotime($course->enddate) : null,
@@ -69,14 +139,18 @@ class MoodleCourseService
             ]);
 
             //Add optional parameters if they exist
-            $optionalFields = ['summary', 'format', 'showgrades', 'newsitems', 'startdate', 'enddate'];
+            $optionalFields = ['summary', 'format', 'showgrades', 'newsitems'];
             foreach ($optionalFields as $field) {
                 if (isset($courseData[$field])) {
                     $params["courses[0][$field]"] = $courseData[$field];
                 }
             }
 
+
             $response = Http::get($this->apiUrl, $params);
+
+            Log::Info('response body:' . $response->body());
+            
             if (isset($data['errorcode']) || isset($data['exception'])) {
                 Log::error('Moodle API Error (createCourse): ' . $data['message']);
                 return false;

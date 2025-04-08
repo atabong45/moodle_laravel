@@ -9,6 +9,7 @@ class Section extends Model
     protected $fillable = [
         'name',
         'course_id',
+        'moodle_id',
     ];
 
     public function course()

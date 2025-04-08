@@ -32,7 +32,6 @@
         <div class="mt-12">
             <h2 class="text-2xl font-bold text-black">Rejoignez-nous dès aujourd'hui !</h2>
             <p class="mt-4 text-lg text-gray-600">Inscrivez-vous pour accéder à nos ressources et commencer votre parcours d'apprentissage.</p>
-            <a href="/register" class="mt-4 inline-block bg-blue-600 text-white py-2 px-6 rounded hover:bg-blue-700">S'inscrire maintenant</a>
         </div>
     </div>
 @endsection

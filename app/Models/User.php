@@ -11,6 +11,7 @@ class User extends Authenticatable
     use HasFactory, Notifiable, HasRoles;
 
     protected $fillable = [
+        'moodle_id',
         'name',
         'email',
         'password',
