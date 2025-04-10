@@ -4,12 +4,15 @@ namespace App\Services;
 
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\Storage;
+use App\Models\Section;
 
 class MoodleSectionService
 {
     protected string $apiUrl;
     protected string $token;
     protected array $defaultParams;
+    protected string $logFilePath;
 
     public function __construct()
     {
@@ -19,6 +22,61 @@ class MoodleSectionService
             'wstoken' => $this->token,
             'moodlewsrestformat' => 'json'
         ];
+
+        $this->logFilePath = storage_path('logs/moodle_actions.txt');
+    }
+
+    /**
+     * Log an action to the sync file
+     */
+    public function logAction(string $action, array $data): void
+    {
+        $logEntry = [
+            'timestamp' => now()->toIso8601String(),
+            'action' => $action,
+            'data' => $data
+        ];
+
+        $logLine = json_encode($logEntry) . PHP_EOL;
+        file_put_contents($this->logFilePath, $logLine, FILE_APPEND);
+
+        Log::info("Moodle section action logged: {$action}");
+    }
+
+    /**
+     * Log section creation action
+     */
+    public function logSectionCreation(Section $section): void
+    {
+        $sectionData = [
+            'id' => $section->id,
+            'name' => $section->name,
+            'course_id' => $section->course_id,
+        ];
+
+        $this->logAction('section_create', $sectionData);
+    }
+
+    /**
+     * Log section update action
+     */
+    public function logSectionUpdate(Section $section): void
+    {
+        $sectionData = [
+            'id' => $section->id,
+            'name' => $section->name,
+            'course_id' => $section->course_id,
+        ];
+
+        $this->logAction('section_update', $sectionData);
+    }
+
+    /**
+     * Log section deletion action
+     */
+    public function logSectionDeletion(Section $section): void
+    {
+        $this->logAction('section_delete', ['id' => $section->id]);
     }
 
     public function listerSectionsCours(int $courseId): array

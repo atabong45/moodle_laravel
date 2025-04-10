@@ -53,9 +53,11 @@
             <!-- Category Field -->
             <div class="flex items-center">
                 <label for="category" class="w-36">Catégorie :</label>
-                <select name="category" class="py-1 rounded-md w-full" id="category" required>
+                <select name="category_id" class="py-1 rounded-md w-full" id="category" required>
                @foreach($categories as $category)
-                    <option value="{{ $category->id }}">{{ $category->name }}</option>
+                    <option value="{{ $category->id }}" {{ $loop->first ? 'selected' : '' }}>
+                        {{ $category->name }}
+                    </option>
                 @endforeach
                 </select>
             </div>

@@ -4,10 +4,18 @@ namespace App\Http\Controllers;
 
 use App\Models\Section;
 use App\Models\Course;
+use App\Services\MoodleSectionService;
 use Illuminate\Http\Request;
 
 class SectionController extends Controller
 {
+    protected $moodleSectionService;
+
+    public function __construct(MoodleSectionService $moodleSectionService)
+    {
+        $this->moodleSectionService = $moodleSectionService;
+    }
+
     public function index(Course $course)
     {
         $sections = $course->sections();
@@ -27,7 +35,11 @@ class SectionController extends Controller
             'course_id' => 'required|exists:courses,id',
         ]);
 
-        Section::create($request->all());
+        $section = Section::create($request->all());
+
+        // Log the action for synchronization
+        $this->moodleSectionService->logSectionCreation($section);
+
         return redirect()->route('sections.index')->with('success', 'Section created successfully.');
     }
 
@@ -55,12 +67,20 @@ class SectionController extends Controller
         ]);
 
         $section->update($request->all());
+
+        // Log the action for synchronization
+        $this->moodleSectionService->logSectionUpdate($section);
+
         return redirect()->route('sections.index')->with('success', 'Section updated successfully.');
     }
 
     public function destroy(Section $section)
     {
+        // Log the action for synchronization before deleting
+        $this->moodleSectionService->logSectionDeletion($section);
+
         $section->delete();
+
         return redirect()->route('sections.index')->with('success', 'Section deleted successfully.');
     }
 

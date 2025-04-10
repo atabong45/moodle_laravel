@@ -128,29 +128,39 @@ class MoodleCourseService
                 'wsfunction' => 'core_course_create_courses',
                 'courses' => [
                     [
-                        'fullname' => $course->fullname,
-                        'shortname' => $course->shortname,
-                        'categoryid' => Category::where('id', $course->category_id)->value('moodle_id'), // Récupérer le moodle_id
-                        'summary' => $course->summary,
-                        'startdate' => $course->startdate ? strtotime($course->startdate) : null,
-                        'enddate' => $course->enddate ? strtotime($course->enddate) : null,
+                    'fullname' => $course->fullname,
+                    'shortname' => $course->shortname,
+                    'categoryid' => (int)Category::where('id', $course->category_id)->value('moodle_id'),
+                    'summary' => $course->summary ?? '',
+                    'summaryformat' => 1, // 1 = HTML format
+                    'startdate' => $course->startdate ? (int)strtotime($course->startdate) : (int)time(),
+                    'enddate' => $course->enddate ? (int)strtotime($course->enddate) : 0,
+                    'visible' => 1, // 1 = visible, 0 = hidden
                     ]
                 ]
             ]);
-
-            //Add optional parameters if they exist
-            $optionalFields = ['summary', 'format', 'showgrades', 'newsitems'];
-            foreach ($optionalFields as $field) {
-                if (isset($courseData[$field])) {
-                    $params["courses[0][$field]"] = $courseData[$field];
-                }
-            }
-
-
             $response = Http::get($this->apiUrl, $params);
+            Log::Info(' mes params:' . json_encode($params) . 'response body:' . $response->body());
 
-            Log::Info('response body:' . $response->body());
-            
+            // Récupérer l'ID du cours créé
+            $courseData = json_decode($response->body(), true);
+            if (is_array($courseData) && !empty($courseData[0]['id'])) {
+                $courseId = $courseData[0]['id'];
+                
+                // Étape 2: Ajouter l'administrateur comme enseignant
+                $enrollParams = array_merge($this->defaultParams, [
+                    'wsfunction' => 'enrol_manual_enrol_users',
+                    'enrolments' => [
+                        [
+                            'roleid' => 3,  // 3 est généralement l'ID du rôle "Teacher" dans Moodle
+                            'userid' => 2,  // ID de l'administrateur
+                            'courseid' => $courseId
+                        ]
+                    ]
+                ]);
+                $enrollResponse = Http::get($this->apiUrl, $enrollParams);
+                Log::Info('Enroll response: ' . $enrollResponse->body());
+            }
             if (isset($data['errorcode']) || isset($data['exception'])) {
                 Log::error('Moodle API Error (createCourse): ' . $data['message']);
                 return false;

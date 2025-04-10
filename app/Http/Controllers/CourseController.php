@@ -46,6 +46,7 @@ class CourseController extends Controller
                 'shortname' => 'required|string|max:255',
                 'summary' => 'nullable|string',
                 'numsections' => 'required|integer',
+                'category_id' => 'required|exists:categories,id',
                 'startdate' => 'required|date',
                 'enddate' => 'nullable|date|after_or_equal:startdate',
             ]);
