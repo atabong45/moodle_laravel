@@ -158,7 +158,7 @@ class SynchronisationController extends Controller
                     $existingUser->update([
                         'name' => $moodleUser['fullname'],
                         'email' => $moodleUser['email'],
-                        'password' => bcrypt('defaultpassword'),
+                        'password' => bcrypt('password'),
                         'profile_picture' => $moodleUser['profileimageurl'] ?? null,
                     ]);
                 } else {
@@ -273,8 +273,8 @@ class SynchronisationController extends Controller
             }
                 
 
-            Section::whereNotNull('moodle_id')->whereNotIn('moodle_id', $moodleSectionIds)->delete();
-            Module::whereNotNull('moodle_id')->whereNotIn('moodle_id', $moodleModuleIds)->delete();
+//            Section::whereNotNull('moodle_id')->whereNotIn('moodle_id', $moodleSectionIds)->delete();
+//            Module::whereNotNull('moodle_id')->whereNotIn('moodle_id', $moodleModuleIds)->delete();
 
 
             return redirect()->back()->with('success', 'Synchronisation terminée !');

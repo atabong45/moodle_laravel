@@ -55,12 +55,33 @@ $iconActiveClasses = 'transform rotate-90 text-blue-700';
                                 class="inline-flex items-center px-4 py-2 bg-blue-600 hover:bg-blue-700 
                                     text-white font-medium rounded-lg transition duration-150 ease-in-out
                                     shadow-md hover:shadow-lg space-x-2">
+
                                 <i class="fas fa-file-download h-5 w-5"></i>
                                 <span>Télécharger le PDF</span>
                             </a>
+                            <a href="{{ asset('storage/' . $module->file_path)  }}" target="_blank" rel="noopener noreferrer" download
+                                class="inline-flex items-center px-4 py-2 bg-blue-600 hover:bg-blue-700 
+                                    text-white font-medium rounded-lg transition duration-150 ease-in-out
+                                    shadow-md hover:shadow-lg space-x-2">
+
+                                <i class="fas fa-file-download h-5 w-5"></i>
+                                <span>Télécharger le PDF</span>
+                            </a>
+
                         </div>
                     @endif
                 @endforeach
+
+                {{-- Bouton pour créer un nouveau module --}}
+                <div class="mt-4 flex justify-center">
+                <a href="{{ route('modules.create', ['section_id' => $section->id]) }}"
+                    class="inline-flex items-center px-4 py-2 border border-blue-600 bg-blue-50 hover:bg-blue-100 
+                        text-blue-600 font-medium rounded-lg transition duration-150 ease-in-out
+                        shadow-md hover:shadow-lg space-x-2">
+                    <i class="fas fa-plus h-5 w-5"></i>
+                    <span>Créer un Nouveau Module</span>
+                </a>
+                </div>
             </div>
         </div>
     </div>

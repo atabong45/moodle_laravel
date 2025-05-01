@@ -25,10 +25,11 @@ class ModuleController extends Controller
         return view('modules.index', compact('modules'));
     }
 
-    public function create()
+    public function create(Request $request)
     {
+        $sectionId = $request->get('section_id');
         $sections = Section::all();
-        return view('modules.create', compact('sections'));
+        return view('modules.create', compact('sections', 'sectionId'));
     }
 
     public function store(Request $request)
@@ -36,16 +37,19 @@ class ModuleController extends Controller
         $validated = $request->validate([
             'name' => 'required|string|max:255',
             'modname' => 'required|string|max:255',
-            'modplural' => 'required|string|max:255',
-            'downloadcontent' => 'required|boolean',
-            'file_path' => 'nullable|string|max:255',
+            'file_path' => 'required|file|max:10240', // max 10MB par exemple
             'section_id' => 'required|exists:sections,id',
+            'downloadcontent' => 'required|integer|in:0,1', // Validation pour downloadcontent (0 ou 1)
+            'modplural' => 'required|string|in:Files,Assignments', // Validation pour modplural (Files ou Assignments)
         ]);
 
+        $validated['file_path'] = $request->file('file_path')->store('modules', 'public');
         $module = Module::create($validated);
         $this->moodleModuleService->logModuleCreation($module);
-
-        return redirect()->route('modules.index')->with('success', 'Module créé avec succès.');
+        // Récupérer l'ID du cours via la section associée
+        $courseId = $module->section->course_id;
+        // Rediriger vers la page du cours
+        return redirect()->route('courses.show', ['course' => $courseId])->with('success', 'Module créé avec succès.');
     }
 
     public function show(Module $module)

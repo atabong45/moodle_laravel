@@ -66,6 +66,8 @@ Route::middleware('auth')->group(function () {
     Route::resource('modules', ModuleController::class);
     Route::get('/modules/download/{module}', [ModuleController::class, 'download'])->name('modules.download');
     Route::post('/synchronisation', [SynchronisationController::class, 'synchronize'])->name('synchronisation');
+    //Route::get('/modules/create', [ModuleController::class, 'create'])->name('modules.create');
+
 
     //Sections (nested under courses)
     Route::prefix('/courses/{course}')->group(function () {

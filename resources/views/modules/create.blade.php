@@ -1,43 +1,57 @@
 @extends('layouts.app')
 
 @section('content')
-<div class="container">
-    <h1>Créer un module</h1>
-    <form action="{{ route('modules.store') }}" method="POST">
+<div class="container mx-auto mt-10">
+    <h1 class="text-2xl font-bold mb-6">Créer un Nouveau Module</h1>
+
+    <form action="{{ route('modules.store') }}" method="POST" enctype="multipart/form-data">
         @csrf
-        <div class="mb-3">
-            <label for="name" class="form-label">Nom</label>
-            <input type="text" class="form-control" id="name" name="name" required>
+
+        <div class="mb-4">
+            <label for="name" class="block text-sm font-medium text-gray-700">Nom du Module</label>
+            <input type="text" name="name" id="name" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm" required>
         </div>
-        <div class="mb-3">
-            <label for="modname" class="form-label">Nom du module</label>
-            <input type="text" class="form-control" id="modname" name="modname" required>
-        </div>
-        <div class="mb-3">
-            <label for="modplural" class="form-label">Nom au pluriel</label>
-            <input type="text" class="form-control" id="modplural" name="modplural" required>
-        </div>
-        <div class="mb-3">
-            <label for="downloadcontent" class="form-label">Contenu téléchargeable</label>
-            <select class="form-control" id="downloadcontent" name="downloadcontent">
-                <option value="1">Oui</option>
-                <option value="0">Non</option>
+
+        <div class="mb-4">
+            <label for="modname" class="block text-sm font-medium text-gray-700">Type de Module</label>
+            <select name="modname" id="modname" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm" required onchange="updateModplural()">
+                <option value="resource">Ressource</option>
+                <option value="assign">Devoir</option>
             </select>
         </div>
-        <div class="mb-3">
-            <label for="file_path" class="form-label">Chemin du fichier</label>
-            <input type="text" class="form-control" id="file_path" name="file_path">
+
+        <div class="mb-4">
+            <label for="file_path" class="block text-sm font-medium text-gray-700">Téléverser une Ressource</label>
+            <input type="file" name="file_path" id="file_path" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm">
         </div>
-        <div class="mb-3">
-            <label for="section_id" class="form-label">Section</label>
-            <select class="form-control" id="section_id" name="section_id">
-                <option value="">Sélectionnez une section</option>
-                @foreach ($sections as $section)
-                <option value="{{ $section->id }}">{{ $section->name }}</option>
-                @endforeach
-            </select>
+
+        <!-- Champ hidden pour downloadcontent -->
+        <input type="hidden" name="downloadcontent" value="1">
+
+        <!-- Champ hidden pour modplural -->
+        <input type="hidden" name="modplural" id="modplural" value="Files">
+
+        <input type="hidden" name="section_id" value="{{ $sectionId }}">
+
+        <div class="mb-4">
+            <button type="submit" class="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700">
+                Créer le Module
+            </button>
         </div>
-        <button type="submit" class="btn btn-primary">Créer</button>
     </form>
 </div>
+
+<script>
+    // Fonction pour mettre à jour la valeur de modplural en fonction du choix de modname
+    function updateModplural() {
+        const modname = document.getElementById('modname').value;
+        const modplural = document.getElementById('modplural');
+
+        if (modname === 'resource') {
+            modplural.value = 'Files';
+        } else if (modname === 'assign') {
+            modplural.value = 'Assignments';
+        }
+    }
+</script>
 @endsection
