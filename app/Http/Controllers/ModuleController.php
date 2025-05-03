@@ -22,6 +22,7 @@ class ModuleController extends Controller
     public function index()
     {
         $modules = Module::with('section')->get();
+        
         return view('modules.index', compact('modules'));
     }
 
@@ -34,23 +35,44 @@ class ModuleController extends Controller
 
     public function store(Request $request)
     {
+        // Validation des données
         $validated = $request->validate([
-            'name' => 'required|string|max:255',
-            'modname' => 'required|string|max:255',
-            'file_path' => 'required|file|max:10240', // max 10MB par exemple
-            'section_id' => 'required|exists:sections,id',
-            'downloadcontent' => 'required|integer|in:0,1', // Validation pour downloadcontent (0 ou 1)
-            'modplural' => 'required|string|in:Files,Assignments', // Validation pour modplural (Files ou Assignments)
+            'name' => ['required', 'string', 'max:255'],
+            'modname' => ['required', 'string', 'max:255'],
+            'file_path' => ['required', 'file', 'max:10240'], // max 10 Mo
+            'section_id' => ['required', 'exists:sections,id'],
+            'downloadcontent' => ['required', 'integer', 'in:0,1'],
+            'modplural' => ['required', 'string', 'in:Files,Assignments'],
         ]);
 
-        $validated['file_path'] = $request->file('file_path')->store('modules', 'public');
+        // Stockage sécurisé du fichier
+        if ($request->hasFile('file_path')) {
+            $validated['file_path'] = $request->file('file_path')->store('modules', 'public');
+        }
+
+        // Création du module
         $module = Module::create($validated);
+
+        // Log de création (assure-toi que le service injecté existe bien)
         $this->moodleModuleService->logModuleCreation($module);
-        // Récupérer l'ID du cours via la section associée
-        $courseId = $module->section->course_id;
-        // Rediriger vers la page du cours
-        return redirect()->route('courses.show', ['course' => $courseId])->with('success', 'Module créé avec succès.');
+
+        // Vérifie que la relation section existe avant d'accéder à course_id
+        if (!$module->relationLoaded('section')) {
+            $module->load('section');
+        }
+
+        $courseId = optional($module->section)->course_id;
+
+        // Sécurise la redirection même si le cours n'existe pas
+        if ($courseId) {
+            return redirect()
+                ->route('courses.show', ['course' => $courseId])
+                ->with('success', 'Module créé avec succès.');
+        }
+
+        return redirect()->back()->withErrors('Le cours associé est introuvable.');
     }
+
 
     public function show(Module $module)
     {

@@ -67,7 +67,6 @@ $iconActiveClasses = 'transform rotate-90 text-blue-700';
                                 <i class="fas fa-file-download h-5 w-5"></i>
                                 <span>Télécharger le PDF</span>
                             </a>
-
                         </div>
                     @endif
                 @endforeach

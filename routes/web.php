@@ -63,11 +63,10 @@ Route::middleware('auth')->group(function () {
     Route::resource('courses', CourseController::class);
 
     // Modules
-    Route::resource('modules', ModuleController::class);
     Route::get('/modules/download/{module}', [ModuleController::class, 'download'])->name('modules.download');
     Route::post('/synchronisation', [SynchronisationController::class, 'synchronize'])->name('synchronisation');
     //Route::get('/modules/create', [ModuleController::class, 'create'])->name('modules.create');
-
+    //Route::post('/modules', [ModuleController::class, 'store'])->name('modules.store');
 
     //Sections (nested under courses)
     Route::prefix('/courses/{course}')->group(function () {
@@ -80,8 +79,8 @@ Route::middleware('auth')->group(function () {
         Route::delete('/sections/{section}', [SectionController::class, 'destroy'])->name('sections.destroy'); // Delete a section
     });
 
-    Route::get('/sections/create_for_teacher/{course_id}', [SectionController::class, 'create_for_teacher'])->name('sections.create');
-    Route::post('/sections/store_for_teacher/', [SectionController::class, 'store_for_teacher'])->name('sections.store');
+    Route::get('/sections/create_for_teacher/{course_id}', [SectionController::class, 'create_for_teacher'])->name('teachers.sections.create');
+    Route::post('/sections/store_for_teacher/', [SectionController::class, 'store_for_teacher'])->name('teachers.sections.store');
 
     // questions d'une soumission
     // Routes pour les soumissions
@@ -124,6 +123,8 @@ Route::middleware('auth')->group(function () {
     Route::get('/contact', [ContactController::class, 'index'])->name('contact.index');
     Route::post('/contact', [ContactController::class, 'send'])->name('contact.send');
 });
+    Route::resource('modules', ModuleController::class);
+
 
 // About
 Route::view('/about', 'about')->name('about');
