@@ -100,120 +100,208 @@ class MoodleSectionService
         }
     }
 
-    public function creerSection(int $courseId, string $name, int $sectionNumber, array $sectionData = []): array
-    {
-        try {
-            $params = array_merge($this->defaultParams, [
-                'wsfunction' => 'core_course_edit_section',
-                'courseid' => $courseId,
-                'section[name]' => $name,
-                'section[sectionnumber]' => $sectionNumber
-            ]);
-
-            foreach ($sectionData as $key => $value) {
-                $params["section[$key]"] = $value;
-            }
-
-            $response = Http::get($this->apiUrl, $params);
-            return $response->json();
-        } catch (\Exception $e) {
-            Log::error('Erreur API Moodle (creerSection): ' . $e->getMessage());
-            throw $e;
+/**
+ * Fonction utilitaire pour transformer un tableau en paramètres d'API REST
+ */
+protected function rest_api_parameters($in_args, $prefix = '', $out_dict = null)
+{
+    if ($out_dict === null) {
+        $out_dict = [];
+    }
+    
+    if (!is_array($in_args)) {
+        $out_dict[$prefix] = $in_args;
+        return $out_dict;
+    }
+    
+    if ($prefix == '') {
+        $prefix = $prefix . '{0}';
+    } else {
+        $prefix = $prefix . '[{0}]';
+    }
+    
+    if (array_keys($in_args) === range(0, count($in_args) - 1)) {
+        // C'est un tableau
+        foreach ($in_args as $idx => $item) {
+            $this->rest_api_parameters($item, str_replace('{0}', $idx, $prefix), $out_dict);
+        }
+    } else {
+        // C'est un dictionnaire
+        foreach ($in_args as $key => $item) {
+            $this->rest_api_parameters($item, str_replace('{0}', $key, $prefix), $out_dict);
         }
     }
+    
+    return $out_dict;
+}
 
-    /**
-     * Mettre à jour une section existante
-     * Cette méthode utilise core_course_update_sections pour modifier plusieurs attributs
-     * d'une section en une seule requête
-     */
-    public function modifierSection(int $courseId, int $sectionId, array $sectionData): array
-    {
-        try {
-            $params = array_merge($this->defaultParams, [
-                'wsfunction' => 'core_course_update_sections',
-                'courseid' => $courseId,
-                'sections[0][id]' => $sectionId
-            ]);
 
-            // Ajouter les données de modification
-            foreach ($sectionData as $key => $value) {
-                $params["sections[0][$key]"] = $value;
-            }
 
-            $response = Http::get($this->apiUrl, $params);
-            return $response->json();
-        } catch (\Exception $e) {
-            Log::error('Erreur API Moodle (modifierSection): ' . $e->getMessage());
-            throw $e;
-        }
-    }
-
-    /**
-     * Changer la visibilité d'une section
-     */
-    public function changerVisibiliteSection(int $courseId, int $sectionId, bool $visible): array
-    {
-        try {
-            return $this->modifierSection($courseId, $sectionId, [
-                'visible' => $visible ? 1 : 0
-            ]);
-        } catch (\Exception $e) {
-            Log::error('Erreur API Moodle (changerVisibiliteSection): ' . $e->getMessage());
-            throw $e;
-        }
-    }
-
-    /**
-     * Obtenir une section spécifique avec ses modules
-     * Cette méthode filtre les résultats de get_contents pour retourner
-     * uniquement la section demandée
-     */
-    public function obtenirSection(int $courseId, int $sectionId): ?array
-    {
-        try {
-            $sections = $this->listerSectionsCours($courseId);
+/**
+ * Créer une section en utilisant le plugin wsmanagesections
+ */
+public function creerSection(int $courseId, string $name, int $sectionNumber, array $sectionData = []): array
+{
+    try {
+        // Construire l'URL pour la création
+        $url = $this->apiUrl . '?wstoken=' . $this->token 
+             . '&wsfunction=local_wsmanagesections_create_sections'
+             . '&moodlewsrestformat=json'
+             . '&courseid=' . $courseId
+             . '&position=' . $sectionNumber
+             . '&number=1';
+        
+        Log::debug('URL de création de section: ' . $url);
+        
+        $response = Http::get($url);
+        
+        Log::debug('Réponse brute de création: ' . $response->body());
+        
+        $result = $response->json();
+        
+        Log::debug('Résultat JSON de création: ' . json_encode($result));
+        
+        // Si la section a été créée avec succès, essayons de la renommer
+        if (!empty($result) && is_array($result) && isset($result[0]['sectionnumber'])) {
+            $sectionNumber = $result[0]['sectionnumber'];
+            $sectionId = $result[0]['sectionid'];
             
-            foreach ($sections as $section) {
-                if ($section['id'] == $sectionId) {
-                    return $section;
-                }
+            Log::debug("Section créée avec succès: ID={$sectionId}, Number={$sectionNumber}");
+            
+            // Tenter de renommer la section
+            $updateUrl = $this->apiUrl . '?wstoken=' . $this->token 
+                      . '&wsfunction=local_wsmanagesections_update_sections'
+                      . '&moodlewsrestformat=json'
+                      . '&courseid=' . $courseId
+                      . '&sections[0][type]=num'
+                      . '&sections[0][section]=' . $sectionNumber
+                      . '&sections[0][name]=' . urlencode($name);
+            
+            // Ajouter d'autres propriétés si nécessaire
+            if (!empty($sectionData['summary'])) {
+                $updateUrl .= '&sections[0][summary]=' . urlencode($sectionData['summary']);
             }
             
-            return null;
-        } catch (\Exception $e) {
-            Log::error('Erreur API Moodle (obtenirSection): ' . $e->getMessage());
-            throw $e;
+            if (isset($sectionData['visible'])) {
+                $updateUrl .= '&sections[0][visible]=' . $sectionData['visible'];
+            }
+            
+            Log::debug('URL de mise à jour du nom: ' . $updateUrl);
+            
+            $updateResponse = Http::get($updateUrl);
+            
+            Log::debug('Réponse brute de mise à jour: ' . $updateResponse->body());
+            Log::debug('Code de statut de mise à jour: ' . $updateResponse->status());
         }
+        
+        return is_array($result) ? $result : [];
+    } catch (\Exception $e) {
+        Log::error('Erreur API Moodle (creerSection): ' . $e->getMessage());
+        Log::error('Trace: ' . $e->getTraceAsString());
+        return [];
     }
+}
 
-    /**
-     * Déplacer une section vers une nouvelle position
-     */
-    public function deplacerSection(int $courseId, int $sectionId, int $position): array
-    {
-        try {
-            return $this->modifierSection($courseId, $sectionId, [
-                'sectionnumber' => $position
-            ]);
-        } catch (\Exception $e) {
-            Log::error('Erreur API Moodle (deplacerSection): ' . $e->getMessage());
-            throw $e;
+/**
+ * Modifier une section existante en utilisant le plugin wsmanagesections
+ */
+public function modifierSection(int $courseId, int $sectionId, array $sectionData): array
+{
+    try {
+        // D'abord obtenir le numéro de section à partir de l'ID
+        $sections = $this->listerSectionsCours($courseId);
+        $sectionNumber = null;
+        
+        foreach ($sections as $section) {
+            if ($section['id'] == $sectionId) {
+                $sectionNumber = $section['section'];
+                break;
+            }
         }
+        
+        if ($sectionNumber === null) {
+            throw new \Exception("Section ID {$sectionId} non trouvée dans le cours {$courseId}");
+        }
+        
+        // Préparer les données pour la mise à jour
+        $sectionsData = [
+            [
+                'type' => 'num',
+                'section' => $sectionNumber,
+                'name' => $sectionData['name'] ?? '',
+                'summary' => $sectionData['summary'] ?? '',
+                'summaryformat' => $sectionData['summaryformat'] ?? 1,
+                'visible' => $sectionData['visible'] ?? 1
+            ]
+        ];
+        
+        return $this->modifierMultipleSections($courseId, $sectionsData);
+    } catch (\Exception $e) {
+        Log::error('Erreur API Moodle (modifierSection): ' . $e->getMessage());
+        throw $e;
     }
+}
 
-    /**
-     * Mettre à jour le résumé d'une section
-     */
-    public function modifierResume(int $courseId, int $sectionId, string $summary): array
-    {
-        try {
-            return $this->modifierSection($courseId, $sectionId, [
-                'summary' => $summary
-            ]);
-        } catch (\Exception $e) {
-            Log::error('Erreur API Moodle (modifierResume): ' . $e->getMessage());
-            throw $e;
-        }
+/**
+ * Modifier plusieurs sections
+ */
+protected function modifierMultipleSections(int $courseId, array $sectionsData): array
+{
+    try {
+        $params = array_merge($this->defaultParams, [
+            'wsfunction' => 'local_wsmanagesections_update_sections',
+            'courseid' => $courseId
+        ]);
+        
+        $sectionsParams = $this->rest_api_parameters(['sections' => $sectionsData]);
+        $params = array_merge($params, $sectionsParams);
+        
+        //$response = Http::post($this->apiUrl, $params);
+        $response = Http::get($this->apiUrl . '?' . http_build_query($params));
+        return $response->json();
+    } catch (\Exception $e) {
+        Log::error('Erreur API Moodle (modifierMultipleSections): ' . $e->getMessage());
+        throw $e;
     }
+}
+
+/**
+ * Supprimer des sections
+ */
+public function supprimerSection(int $sectionId): array
+{
+    try {
+        $params = array_merge($this->defaultParams, [
+            'wsfunction' => 'local_wsmanagesections_delete_sections',
+            'sectionids' => [$sectionId]
+        ]);
+        
+        $response = Http::post($this->apiUrl, $params);
+        return $response->json();
+    } catch (\Exception $e) {
+        Log::error('Erreur API Moodle (supprimerSection): ' . $e->getMessage());
+        throw $e;
+    }
+}
+
+/**
+ * Déplacer une section vers une nouvelle position
+ */
+public function deplacerSection(int $courseId, int $sectionNumber, int $position): array
+{
+    try {
+        $params = array_merge($this->defaultParams, [
+            'wsfunction' => 'local_wsmanagesections_move_section',
+            'courseid' => $courseId,
+            'sectionnumber' => $sectionNumber,
+            'position' => $position
+        ]);
+        
+        $response = Http::post($this->apiUrl, $params);
+        return $response->json();
+    } catch (\Exception $e) {
+        Log::error('Erreur API Moodle (deplacerSection): ' . $e->getMessage());
+        throw $e;
+    }
+}
 }

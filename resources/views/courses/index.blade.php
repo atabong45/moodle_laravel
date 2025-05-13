@@ -11,26 +11,23 @@
                 </div>
     <h1 class='text-3xl font-bold'>Mes cours</h1>
     <hr class="w-full h-[2px] mt-2 mb-3 bg-black" />
-@if(auth()->user()->hasRole('ROLE_TEACHER')|| auth()->user()->hasRole('ROLE_ADMIN'))
-
-    <div class='flex w-full gap-4 mb-4'>
-        <a href="{{ route('courses.create') }}">
-            {{-- <x-button>
-                Gerer les cours
-            </x-button> --}}
-        </a>
-            {{-- <x-button>
-                Gerer categories
-            </x-button> --}}
-        <a class="ml-auto" href="{{ route('courses.create') }}">
-            <x-button full='true' href="{{ route('courses.create') }}">
-                Créer un cours
-            </x-button>
-        </a>
-    </div>
-
-
-@endif
+    @if(auth()->user()->hasRole('ROLE_TEACHER')|| auth()->user()->hasRole('ROLE_ADMIN'))
+        <div class='flex w-full gap-4 mb-4'>
+            <a href="{{ route('courses.create') }}">
+                {{-- <x-button>
+                    Gerer les cours
+                </x-button> --}}
+            </a>
+                {{-- <x-button>
+                    Gerer categories
+                </x-button> --}}
+            <a class="ml-auto" href="{{ route('courses.create') }}">
+                <x-button full='true' href="{{ route('courses.create') }}">
+                    Créer un cours
+                </x-button>
+            </a>
+        </div>
+    @endif
 
     <!-- Section de recherche -->
     <div class="mb-4">

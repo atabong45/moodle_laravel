@@ -40,7 +40,7 @@ class SectionController extends Controller
         // Log the action for synchronization
         $this->moodleSectionService->logSectionCreation($section);
 
-        return redirect()->route('sections.index')->with('success', 'Section created successfully.');
+        return redirect()->route('courses.show', $request->course_id)->with('success', 'Section created successfully.');
     }
 
     public function show(Course $course, Section $section)

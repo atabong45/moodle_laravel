@@ -69,10 +69,7 @@
             </div>
 
             <!-- Number of sections Field -->
-            <div class="flex items-center">
-                <label for="numsections" class="w-36">Nombre de sections :</label>
-                <input type="number" name="numsections" class="py-1 rounded-md w-full" id="numsections" required>
-            </div>
+            <input type="hidden" name="numsections" id="numsections" value="0">
 
             <!-- Start Date Field -->
             <div class="flex items-center">

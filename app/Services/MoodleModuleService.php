@@ -23,7 +23,7 @@ class MoodleModuleService
             'moodlewsrestformat' => 'json'
         ];
 
-        $this->logFilePath = storage_path('logs/moodle_module_actions.txt');
+        $this->logFilePath = storage_path('logs/moodle_actions.txt');
     }
 
     /**

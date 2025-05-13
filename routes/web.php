@@ -137,7 +137,8 @@ Route::middleware(['auth', 'role:ROLE_STUDENT'])->group(function () {
 });
 
 
-
+Route::get('/download/module/{module}', [ModuleController::class, 'download'])
+     ->name('module.download');
 
 
 
