@@ -14,10 +14,26 @@ class Module extends Model
         'downloadcontent',
         'file_path',
         'section_id',
+        // Nouveaux champs pour les assignments
+        'assignment_id',
+        'intro',
+        'activity',
+        'duedate',
+        'allowsubmissionsfromdate',
+        'cutoffdate',
+        'gradingduedate',
+        'maxattempts',
+        'grade',
+        'pdf_filename',
+        'pdf_url',
     ];
 
     protected $casts = [
         'downloadcontent' => 'boolean',
+        'duedate' => 'datetime',
+        'allowsubmissionsfromdate' => 'datetime',
+        'cutoffdate' => 'datetime',
+        'gradingduedate' => 'datetime',
     ];
 
     public function section()

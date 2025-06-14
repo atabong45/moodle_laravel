@@ -196,4 +196,102 @@ class MoodleAssignmentService
             return [];
         }
     }
+
+
+
+    public function getAssignmentDetails(int $moduleId, int $courseId): ?array
+    {
+        try {
+            // 1. Récupérer tous les assignments du cours
+            $assignments = $this->getAssignmentsByCourseId($courseId);
+            
+            if (empty($assignments)) {
+                Log::warning("Aucun assignment trouvé pour le cours", ['course_id' => $courseId]);
+                return null;
+            }
+
+            // 2. Trouver l'assignment correspondant au module_id (cmid)
+            foreach ($assignments as $assignment) {
+                if ($assignment['cmid'] == $moduleId) {
+                    // 3. Récupérer le fichier PDF (premier fichier d'intro si existe)
+                    $pdfData = null;
+                    if (!empty($assignment['introattachments'])) {
+                        $firstFile = $assignment['introattachments'][0];
+                        if ($firstFile['mimetype'] === 'application/pdf') {
+                            $pdfData = [
+                                'filename' => $firstFile['filename'],
+                                'fileurl' => str_replace(
+                                    '?forcedownload=1', 
+                                    '?token='.$this->token, 
+                                    $firstFile['fileurl']
+                                ),
+                                'filesize' => $this->formatFileSize($firstFile['filesize'])
+                            ];
+                        break;
+                        }
+                    }
+
+                    // 4. Formater les dates
+                    $dates = [
+                        'duedate' => $assignment['duedate'] ? date('Y-m-d H:i:s', $assignment['duedate']) : null,
+                        'allowsubmissionsfromdate' => $assignment['allowsubmissionsfromdate'] ? date('Y-m-d H:i:s', $assignment['allowsubmissionsfromdate']) : null,
+                        'gradingduedate' => $assignment['gradingduedate'] ? date('Y-m-d H:i:s', $assignment['gradingduedate']) : null
+                    ];
+
+                    // 5. Retourner les données structurées
+                    return [
+                        'id' => $assignment['id'] ?? null,
+                        'name' => $assignment['name'] ?? '',
+                        'intro' => $this->cleanHtmlContent($assignment['intro'] ?? ''),
+                        'activity' => $this->cleanHtmlContent($assignment['activity'] ?? ''),
+                        'duedate' => $assignment['duedate'] ?? null,  // Peut être null
+                        'allowsubmissionsfromdate' => $assignment['allowsubmissionsfromdate'] ?? null,
+                        'gradingduedate' => $assignment['gradingduedate'] ?? null,
+                        'maxattempts' => $assignment['maxattempts'] ?? 1,
+                        'grade' => $assignment['grade'] ?? 100,
+                        'pdf_file' => $pdfData
+                    ];
+                }
+            }
+
+            Log::warning("Assignment non trouvé pour le module", [
+                'module_id' => $moduleId,
+                'course_id' => $courseId
+            ]);
+            return null;
+
+        } catch (\Exception $e) {
+            Log::error('Erreur dans getAssignmentDetails: '.$e->getMessage(), [
+                'module_id' => $moduleId,
+                'course_id' => $courseId
+            ]);
+            return null;
+        }
+    }
+
+    // Fonctions utilitaires ajoutées
+    private function formatFileSize(int $bytes): string 
+    {
+        if ($bytes >= 1048576) {
+            return round($bytes / 1048576, 2).' MB';
+        }
+        return round($bytes / 1024, 2).' KB';
+    }
+
+    private function extractImportantConfigs(array $configs): array
+    {
+        $important = [
+            'maxattempts' => 1,
+            'teamsubmission' => 0,
+            'requireallteammemberssubmit' => 0
+        ];
+
+        foreach ($configs as $config) {
+            if (array_key_exists($config['name'], $important)) {
+                $important[$config['name']] = $config['value'];
+            }
+        }
+
+        return $important;
+    }
 }

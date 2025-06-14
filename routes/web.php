@@ -125,7 +125,6 @@ Route::middleware('auth')->group(function () {
 });
     Route::resource('modules', ModuleController::class);
 
-
 // About
 Route::view('/about', 'about')->name('about');
 
@@ -136,10 +135,19 @@ Route::middleware(['auth', 'role:ROLE_STUDENT'])->group(function () {
         ->name('assignments.submit');
 });
 
-
 Route::get('/download/module/{module}', [ModuleController::class, 'download'])
      ->name('module.download');
 
+
+     /// ////////////// Assignments Routes for Students
+Route::resource('assignments', AssignmentController::class)->only(['show']);
+Route::post('assignments/{module}/compose', [AssignmentController::class, 'composeTest'])
+    ->name('assignments.compose');
+Route::post('assignments/{module}/grades', [AssignmentController::class, 'createGrade'])
+    ->name('grades.create');
+
+Route::get('/assignments/{module}/submissions', [AssignmentController::class, 'submissions'])
+    ->name('assignments.submissions');
 
 
 

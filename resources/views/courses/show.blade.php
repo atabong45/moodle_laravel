@@ -90,13 +90,39 @@ $iconActiveClasses = 'transform rotate-90 text-blue-700';
                                                 {{ $module->file_path ?? 'Aucune consigne disponible' }}
                                             </p>
                                         </div>
+
+                                        <!-- Bouton de soumission -->
+                                        @if(!Auth::user()->hasRole('ROLE_TEACHER'))
+                                            <div class="flex justify-center mt-4">
+                                                <button onclick="openSubmissionModal('{{ $module->id }}')"
+                                                        class="inline-flex items-center px-4 py-2 bg-purple-600 hover:bg-purple-700 
+                                                            text-white font-medium rounded-lg transition duration-150 ease-in-out
+                                                            shadow-md hover:shadow-lg space-x-2">
+                                                    <i class="fas fa-paper-plane mr-2"></i>
+                                                    <span>Faire une soumission</span>
+                                                </button>
+                                            </div>
+                                        @endif
+
+                                        @if(Auth::user()->hasRole('ROLE_TEACHER'))
+                                            <div class="flex justify-center mt-4">
+                                                <a href="{{ route('assignments.submissions', $module->id) }}"
+                                                class="inline-flex items-center px-4 py-2 bg-green-600 hover:bg-green-700 
+                                                    text-white font-medium rounded-lg transition duration-150 ease-in-out
+                                                    shadow-md hover:shadow-lg space-x-2">
+                                                    <i class="fas fa-clipboard-check mr-2"></i>
+                                                    <span>Corriger les soumissions</span>
+                                                </a>
+                                            </div>
+                                        @endif
+                                        
                                     </div>
                                 @endif
                             </div>
                         </div>
                     </div>
                 @endforeach
-            
+
             @if(Auth::user()->hasRole('ROLE_TEACHER'))
                 <hr class="my-4 border-dashed border-gray-400">
                 <div class="mt-4 flex justify-center">
@@ -150,6 +176,55 @@ $iconActiveClasses = 'transform rotate-90 text-blue-700';
         </div>
     </div>
     @endforeach
+
+    <!-- Modal de soumission -->
+<div id="submissionModal" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center hidden z-50">
+    <div class="bg-white rounded-lg p-6 w-full max-w-2xl">
+        <div class="flex justify-between items-center mb-4">
+            <h3 class="text-xl font-bold">Soumettre votre travail</h3>
+            <button onclick="closeSubmissionModal()" class="text-gray-500 hover:text-gray-700">
+                <i class="fas fa-times"></i>
+            </button>
+        </div>
+        
+        <form id="submissionForm">
+            <input type="hidden" id="moduleId" name="module_id" value="">
+            <div class="mb-4">
+                <label class="block text-gray-700 mb-2">Votre réponse</label>
+                <textarea name="response" rows="6" 
+                        class="w-full border rounded-lg p-2 focus:ring-2 focus:ring-purple-300"
+                        placeholder="Écrivez votre réponse ici..."></textarea>
+            </div>
+            
+            <div class="mb-6">
+                <label class="block text-gray-700 mb-2">Fichier (PDF ou TXT uniquement)</label>
+                <div class="flex items-center">
+                    <input type="file" name="submission_file" id="submissionFile" 
+                        accept=".pdf,.txt"
+                        class="hidden">
+                    <label for="submissionFile" 
+                        class="cursor-pointer bg-gray-100 hover:bg-gray-200 px-4 py-2 rounded-lg border border-gray-300">
+                        <i class="fas fa-cloud-upload-alt mr-2"></i>
+                        Choisir un fichier
+                    </label>
+                    <span id="fileName" class="ml-2 text-gray-600">Aucun fichier sélectionné</span>
+                </div>
+                <p class="text-sm text-gray-500 mt-1">Taille maximale : 5MB</p>
+            </div>
+            
+            <div class="flex justify-end space-x-3">
+                <button type="button" onclick="closeSubmissionModal()"
+                        class="px-4 py-2 bg-gray-500 text-white rounded-lg hover:bg-gray-600">
+                    Annuler
+                </button>
+                <button type="button" onclick="submitAssignment()"
+                        class="px-4 py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700">
+                    Valider la soumission
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
 
     @if(Auth::user()->hasRole('ROLE_TEACHER'))
         <div class="flex justify-center mb-6">
@@ -248,7 +323,76 @@ function updateModplural(sectionId) {
         modplural.value = 'Assignments';
     }
 }
+
+// Gestion du modal
+function openSubmissionModal(moduleId) {
+    document.getElementById('moduleId').value = moduleId; // Stocker l'ID du module
+    document.getElementById('submissionModal').classList.remove('hidden');
+    document.body.classList.add('overflow-hidden');
+}
+
+function closeSubmissionModal() {
+    document.getElementById('submissionModal').classList.add('hidden');
+    document.body.classList.remove('overflow-hidden');
+    
+    // Réinitialiser les données du formulaire
+    document.getElementById('moduleId').value = '';
+    document.querySelector('textarea[name="response"]').value = '';
+    document.getElementById('submissionFile').value = '';
+    document.getElementById('fileName').textContent = 'Aucun fichier sélectionné';
+}
+
+// Afficher le nom du fichier sélectionné
+document.getElementById('submissionFile').addEventListener('change', function(e) {
+    const fileName = e.target.files.length ? e.target.files[0].name : 'Aucun fichier sélectionné';
+    document.getElementById('fileName').textContent = fileName;
+});
+
+// Simulation de soumission
+function submitAssignment() {
+    // Ici vous devriez normalement faire une requête AJAX
+    // Pour l'exemple, on simule juste la fermeture avec un message
+    closeSubmissionModal();
+    
+    // Créer une notification de succès
+    const notification = document.createElement('div');
+    notification.className = 'fixed top-4 right-4 bg-orange-500 text-white px-4 py-2 rounded-lg shadow-lg';
+    notification.innerHTML = `
+        <div class="flex items-center">
+            <i class="fas fa-xmark-circle mr-2"></i>
+            <span> Echec de televersement du pdf ou txt, Votre soumission a été enregistrée! </span>
+        </div>
+    `;
+    document.body.appendChild(notification);
+    
+    // Supprimer la notification après 3 secondes
+    setTimeout(() => {
+        notification.remove();
+    }, 3000);
+}
+
+// Fermer le modal si on clique en dehors
+document.getElementById('submissionModal').addEventListener('click', function(e) {
+    if (e.target === this) {
+        closeSubmissionModal();
+    }
+});
 </script>
+
+
+<style>
+/* Animation pour le modal */
+#submissionModal {
+    transition: opacity 0.3s ease;
+}
+#submissionModal > div {
+    transform: translateY(-20px);
+    transition: transform 0.3s ease;
+}
+#submissionModal:not(.hidden) > div {
+    transform: translateY(0);
+}
+</style>
 
 <!-- Include Font Awesome for icons -->
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">

@@ -1,109 +1,89 @@
-    @extends('layouts.app')
+@extends('layouts.app')
 
-    @section('content')
-    <div class="py-12 bg-gray-100">
-        <div class="max-w-7xl mx-auto sm:px-6 lg:px-8">
-            <div class="bg-white shadow-lg rounded-lg">
-                <!-- Titre de l'évaluation -->
-                <div class="p-6 border-b border-gray-200">
-                    <h2 class="text-2xl font-bold text-gray-800">{{ $assignment->name }}</h2>
-                    <p class="text-sm text-gray-600">Date limite : {{ \Carbon\Carbon::parse($assignment->duedate)->format('d/m/Y H:i') }}</p>
-                </div>
+@section('content')
+<div class="container mx-auto py-8">
+    <h1 class="text-3xl font-bold mb-6">{{ $module->name }}</h1>
 
-                <!-- Bouton Retour -->
-                <div class="p-6">
-                    <a href="{{ url()->previous() }}" 
-                    class="text-blue-500 hover:text-blue-700 font-medium mb-4 inline-block">
-                        <i class="fas fa-arrow-left mr-1"></i> Retour
-                    </a>
-                </div>
-
-                <!-- Questions -->
-                <div class="p-6">
-                    <h3 class="text-lg font-bold text-gray-800 mb-4">Questions</h3>
-
-                    @if($questions->isEmpty())
-                        <p class="text-gray-600">Aucune question pour cette évaluation pour le moment.</p>
-                    @else
-                        <ul class="divide-y divide-gray-200">
-                            @foreach($questions as $question)
-                                <li class="py-4">
-                                    <div class="flex justify-between items-start">
-                                        <div>
-                                            <p class="text-gray-800">{{ $loop->iteration }}. {{ $question->content }}</p>
-                                            <ul class="mt-2 space-y-1">
-                                                @foreach(is_string($question->choices) ? json_decode($question->choices) : $question->choices as $key => $choice)
-                                                    @if(auth()->user()->hasRole('ROLE_TEACHER') && $assignment->created_by == auth()->user()->id)
-                                                        <li class="{{ $key == $question->correct_choice_id ? 'text-green-600 font-medium' : 'text-gray-600' }}">
-                                                            {{ chr(65 + $key) }}. {{ $choice }}
-                                                        </li>
-                                                    @else
-                                                        <li class="text-gray-600">
-                                                            {{ chr(65 + $key) }}. {{ $choice }}
-                                                        </li>
-                                                    @endif
-                                                @endforeach
-                                            </ul>
-
-                                        </div>
-
-                                        @if(auth()->user()->hasRole('ROLE_TEACHER') && $assignment->created_by == auth()->user()->id)
-                                        <div class="space-x-2">
-                                            <a href="{{ route('questions.edit', $question->id) }}" 
-                                            class="text-blue-500 hover:text-blue-700">
-                                                Modifier
-                                            </a>
-                                            <form action="{{ route('questions.destroy', $question->id) }}" method="POST" class="inline">
-                                                @csrf
-                                                @method('DELETE')
-                                                <button type="submit" class="text-red-500 hover:text-red-700"
-                                                        onclick="return confirm('Êtes-vous sûr de vouloir supprimer cette question ?')">
-                                                    Supprimer
-                                                </button>
-                                            </form>
-                                        </div>
-                                        @endif
-                                    </div>
-                                </li>
-                            @endforeach
-                        </ul>
-                    @endif
-
-                    @if(auth()->user()->hasRole('ROLE_TEACHER') && $assignment->created_by == auth()->user()->id)
-                    <!-- Bouton pour modifier -->
-                     <hr>
-                            <a href="{{ route('assignments.questions.edit', $assignment->id) }}" 
-                            class="text-blue-500 hover:text-yellow-700 font-medium mx-2">
-                                <i class="fas fa-edit mr-1"></i> Modifier
-                            </a>
-                        <!-- Bouton pour publier l'évaluation -->
-                        @if($assignment->is_published)
-                            <form action="{{ route('assignments.togglePublish', $assignment->id) }}" method="POST" class="inline">
-                                @csrf    
-                                @method('POST')
-                                <button type="submit" class="text-red-500 hover:text-red-700 font-medium">
-                                    <i class="fas fa-ban mr-1"></i> Dépublier
-                                </button>
-                            </form>
-                        @else
-                            <form action="{{ route('assignments.togglePublish', $assignment->id) }}" method="POST" class="inline">
-                            @csrf    
-                            @method('POST')
-                                <button type="submit" class="text-green-500 hover:text-green-700 font-medium">
-                                    <i class="fas fa-check mr-1"></i> Publier
-                                </button>
-                            </form>
-                        @endif
-
-                    @elseif(auth()->user()->hasRole('ROLE_STUDENT'))
-                        <!-- Bouton pour composer si étudiant -->
-                        <a href="{{ route('assignments.compose', $assignment->id) }}" 
-                        class="text-green-500 hover:text-green-700 font-medium mx-2">
-                            <i class="fas fa-pencil-alt mr-1"></i> Composer
-                        </a>
-                    @endif
-                </div>
-            </div>
+    <div class="bg-white rounded-lg shadow-md p-6 mb-6">
+        <h2 class="text-xl font-semibold mb-4">Instructions</h2>
+        <div class="prose max-w-none">
+            {!! $module->activity !!}
         </div>
     </div>
-    @endsection
+
+    @if($module->pdf_url)
+    <div class="bg-white rounded-lg shadow-md p-6 mb-6">
+        <h2 class="text-xl font-semibold mb-4">Document associé</h2>
+        <div class="border rounded-lg p-4 flex items-center justify-between">
+            <div>
+                <i class="fas fa-file-pdf text-red-500 mr-2"></i>
+                <span>{{ $module->pdf_filename }}</span>
+            </div>
+            <a href="{{ $module->pdf_url }}" target="_blank" 
+            class="text-blue-500 hover:text-blue-700">
+                <i class="fas fa-download"></i> Télécharger
+            </a>
+        </div>
+    </div>
+    @endif
+
+    @if(auth()->user()->hasRole('ROLE_TEACHER'))
+    <div class="bg-white rounded-lg shadow-md p-6">
+        <h2 class="text-xl font-semibold mb-4">Composer une épreuve</h2>
+        
+        <form action="{{ route('assignments.compose', $module) }}" method="POST">
+            @csrf
+            
+            <div class="mb-4">
+                <label class="block text-gray-700 mb-2">Sélectionnez les fichiers</label>
+                {{-- @foreach($module->assignmentFiles as $file)
+                <div class="flex items-center mb-2">
+                    <input type="checkbox" name="selected_files[]" 
+                           value="{{ $file->id }}" 
+                           id="file_{{ $file->id }}" class="mr-2">
+                    <label for="file_{{ $file->id }}">{{ $file->filename }}</label>
+                </div>
+                @endforeach --}}
+            </div>
+            
+            <div class="mb-4">
+                <label class="block text-gray-700 mb-2">Instructions supplémentaires</label>
+                <textarea name="instructions" rows="4" 
+                          class="w-full border rounded-lg p-2"></textarea>
+            </div>
+            
+            <button type="submit" 
+                    class="bg-blue-500 text-white px-4 py-2 rounded-lg hover:bg-blue-600">
+                Créer l'épreuve
+            </button>
+        </form>
+        
+        <hr class="my-6">
+        
+        <h2 class="text-xl font-semibold mb-4">Attribuer une note</h2>
+        <form action="{{ route('grades.create', $module) }}" method="POST">
+            @csrf
+            
+            <div class="mb-4">
+                <label class="block text-gray-700 mb-2">Note (0-100)</label>
+                <input type="number" name="grade" min="0" max="100" 
+                       class="border rounded-lg p-2 w-24">
+            </div>
+            
+            <div class="mb-4">
+                <label class="block text-gray-700 mb-2">Commentaire</label>
+                <textarea name="comment" rows="3" 
+                          class="w-full border rounded-lg p-2"></textarea>
+            </div>
+            
+            <input type="hidden" name="submission_id" value="1"> <!-- À adapter -->
+            
+            <button type="submit" 
+                    class="bg-green-500 text-white px-4 py-2 rounded-lg hover:bg-green-600">
+                Enregistrer la note
+            </button>
+        </form>
+    </div>
+    @endif
+</div>
+@endsection

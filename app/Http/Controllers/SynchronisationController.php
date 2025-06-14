@@ -16,6 +16,7 @@ use App\Services\MoodleAssignmentService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Storage;
+use Carbon\Carbon;
 
 class SynchronisationController extends Controller
 {
@@ -236,6 +237,40 @@ class SynchronisationController extends Controller
 
                         $existingModule = Module::where('moodle_id', $module['id'])->first();
 
+
+                        $moduleData = [
+                            'name' => $module['name'],
+                            'modname' => $module['modname'],
+                            'modplural' => $module['modplural'] ?? 'Default Value',
+                            'downloadcontent' => $module['downloadcontent'] ?? '', 
+                            'section_id' => $sectionId,
+                            'course_id' => $courseId,
+                        ];
+
+                        // Ajout des données spécifiques aux assignments
+// Dans la boucle des modules
+if ($module['modname'] === 'assign') {
+    $courseId = Course::where('moodle_id', $moodleCourse['id'])->value('id');
+    $assignmentDetails = $this->moodleAssignmentService->getAssignmentDetails(
+        $module['id'], 
+        $moodleCourse['id'] // course_id Moodle
+    );
+
+    if ($assignmentDetails) {
+        $moduleData = array_merge($moduleData, [
+            'assignment_id' => $assignmentDetails['id'],
+            'intro' => $assignmentDetails['intro'],
+            'activity' => $assignmentDetails['activity'],
+            'duedate' => Carbon::createFromTimestamp($assignmentDetails['duedate']),
+            'allowsubmissionsfromdate' => Carbon::createFromTimestamp($assignmentDetails['allowsubmissionsfromdate']),
+            'gradingduedate' => Carbon::createFromTimestamp($assignmentDetails['gradingduedate']),
+            // Suppression de la relation hasMany, on stocke directement le PDF
+            'pdf_filename' => $assignmentDetails['pdf_file']['filename'] ?? null,
+            'pdf_url' => $assignmentDetails['pdf_file']['fileurl'] ?? null,
+        ]);
+    }
+}
+
                         if ($existingModule) {
                             $existingModule->update([
                                 'name' => $module['name'],
@@ -273,16 +308,19 @@ class SynchronisationController extends Controller
                                 ]);
                             }
                         }
+
+
+                    
+                    // Synchronisation des assignments après la synchronisation des modules
+                        try {
+                            Log::info("Début de la synchronisation des assignments pour le cours", ['course_id' => $moodleCourse['id']]);
+                            $this->moodleAssignmentService->syncAssignmentsWithModules($moodleCourse['id']);
+                            Log::info("Synchronisation des assignments terminée pour le cours", ['course_id' => $moodleCourse['id']]);
+                        } catch (\Exception $e) {
+                            Log::error("Erreur lors de la synchronisation des assignments pour le cours {$moodleCourse['id']}: " . $e->getMessage());
+                            // Continue avec les autres cours même si celui-ci échoue
+                        }
                     }
-                }
-                // Synchronisation des assignments après la synchronisation des modules
-                try {
-                    Log::info("Début de la synchronisation des assignments pour le cours", ['course_id' => $moodleCourse['id']]);
-                    $this->moodleAssignmentService->syncAssignmentsWithModules($moodleCourse['id']);
-                    Log::info("Synchronisation des assignments terminée pour le cours", ['course_id' => $moodleCourse['id']]);
-                } catch (\Exception $e) {
-                    Log::error("Erreur lors de la synchronisation des assignments pour le cours {$moodleCourse['id']}: " . $e->getMessage());
-                    // Continue avec les autres cours même si celui-ci échoue
                 }
             }
                 
