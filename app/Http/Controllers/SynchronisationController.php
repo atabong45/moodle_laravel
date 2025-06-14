@@ -232,85 +232,72 @@ class SynchronisationController extends Controller
                     $moodleModuleIds = array_column($modules, 'id');
 
                     foreach ($modules as $module) {
+                        // 1. Récupération des IDs locaux (une seule fois)
                         $sectionId = Section::where('moodle_id', $section['id'])->value('id');
                         $courseId = Course::where('moodle_id', $moodleCourse['id'])->value('id');
-
-                        $existingModule = Module::where('moodle_id', $module['id'])->first();
-
-
+                        
+                        // 2. Préparation des données de base du module
                         $moduleData = [
                             'name' => $module['name'],
                             'modname' => $module['modname'],
                             'modplural' => $module['modplural'] ?? 'Default Value',
-                            'downloadcontent' => $module['downloadcontent'] ?? '', 
+                            'downloadcontent' => $module['downloadcontent'] ?? '',
                             'section_id' => $sectionId,
                             'course_id' => $courseId,
+                            'file_path' => isset($module['contents'][0]['fileurl']) 
+                                ? str_replace('?forcedownload=1', '?token='.config('moodle.api_token'), $module['contents'][0]['fileurl']) 
+                                : '',
                         ];
 
-                        // Ajout des données spécifiques aux assignments
-// Dans la boucle des modules
-if ($module['modname'] === 'assign') {
-    $courseId = Course::where('moodle_id', $moodleCourse['id'])->value('id');
-    $assignmentDetails = $this->moodleAssignmentService->getAssignmentDetails(
-        $module['id'], 
-        $moodleCourse['id'] // course_id Moodle
-    );
+                        // 3. Traitement spécifique pour les assignments
+                        if ($module['modname'] === 'assign') {
+                            $assignmentDetails = $this->moodleAssignmentService->getAssignmentDetails(
+                                $module['id'], 
+                                $moodleCourse['id']
+                            );
 
-    if ($assignmentDetails) {
-        $moduleData = array_merge($moduleData, [
-            'assignment_id' => $assignmentDetails['id'],
-            'intro' => $assignmentDetails['intro'],
-            'activity' => $assignmentDetails['activity'],
-            'duedate' => Carbon::createFromTimestamp($assignmentDetails['duedate']),
-            'allowsubmissionsfromdate' => Carbon::createFromTimestamp($assignmentDetails['allowsubmissionsfromdate']),
-            'gradingduedate' => Carbon::createFromTimestamp($assignmentDetails['gradingduedate']),
-            // Suppression de la relation hasMany, on stocke directement le PDF
-            'pdf_filename' => $assignmentDetails['pdf_file']['filename'] ?? null,
-            'pdf_url' => $assignmentDetails['pdf_file']['fileurl'] ?? null,
-        ]);
-    }
-}
+                            Log::info("Détails de l'assignement récupérés", [
+                                'course_id' => $moodleCourse['id'],
+                                'assignment_details' => $assignmentDetails
+                            ]);
+
+                            if ($assignmentDetails) {
+                                $moduleData = array_merge($moduleData, [
+                                    'assignment_id' => $assignmentDetails['id'],
+                                    'intro' => $assignmentDetails['intro'],
+                                    'activity' => $assignmentDetails['activity'],
+                                    'duedate' => Carbon::createFromTimestamp($assignmentDetails['duedate']),
+                                    'allowsubmissionsfromdate' => Carbon::createFromTimestamp($assignmentDetails['allowsubmissionsfromdate']),
+                                    'gradingduedate' => Carbon::createFromTimestamp($assignmentDetails['gradingduedate']),
+                                    'pdf_filename' => $assignmentDetails['pdf_file']['filename'] ?? null,
+                                    'pdf_url' => isset($assignmentDetails['pdf_file']['fileurl']) 
+                                        ? $assignmentDetails['pdf_file']['fileurl'] . '?token=' . config('moodle.api_token')
+                                        : null,
+                                ]);
+                            }
+                        }
+
+                        // 4. Recherche du module existant
+                        $existingModule = Module::where('moodle_id', $module['id'])->first();
 
                         if ($existingModule) {
-                            $existingModule->update([
-                                'name' => $module['name'],
-                                'modname' => $module['modname'],
-                                'modplural' => $module['modplural'] ?? 'Default Value',
-                                'downloadcontent' => $module['downloadcontent'] ?? '', 
-                                'file_path' => isset($module['contents'][0]['fileurl']) 
-                                                    ? str_replace('?forcedownload=1', '?token=' . config('moodle.api_token'), $module['contents'][0]['fileurl']) 
-                                                    : '',
-                                'section_id' => $sectionId,
-                                'course_id' => $courseId,
-                            ]);
+                            // Mise à jour du module existant
+                            $existingModule->update($moduleData);
                         } else {
+                            // Tentative de trouver un module existant par nom (sans moodle_id)
                             $existingModuleByName = Module::where('moodle_id', null)
                                 ->where('name', $module['name'])
                                 ->where('section_id', $sectionId)
                                 ->first();
 
                             if ($existingModuleByName) {
-                                $existingModuleByName->update([
-                                    'moodle_id' => $module['id'],
-                                ]);
+                                // Rattachement à un module existant
+                                $existingModuleByName->update(['moodle_id' => $module['id']] + $moduleData);
                             } else {
-                                Module::create([
-                                    'moodle_id' => $module['id'],
-                                    'name' => $module['name'],
-                                    'modname' => $module['modname'],
-                                    'modplural' => $module['modplural'] ?? 'Default Value',
-                                    'downloadcontent' => $module['downloadcontent'] ?? '', 
-                                    'file_path' => isset($module['contents'][0]['fileurl']) 
-                                                        ? str_replace('?forcedownload=1', '?token=' . config('moodle.api_token'), $module['contents'][0]['fileurl']) 
-                                                        : '', 
-                                    'section_id' => $sectionId,
-                                    'course_id' => $courseId,
-                                ]);
+                                // Création d'un nouveau module
+                                Module::create(['moodle_id' => $module['id']] + $moduleData);
                             }
                         }
-
-
-                    
                     // Synchronisation des assignments après la synchronisation des modules
                         try {
                             Log::info("Début de la synchronisation des assignments pour le cours", ['course_id' => $moodleCourse['id']]);
@@ -319,12 +306,10 @@ if ($module['modname'] === 'assign') {
                         } catch (\Exception $e) {
                             Log::error("Erreur lors de la synchronisation des assignments pour le cours {$moodleCourse['id']}: " . $e->getMessage());
                             // Continue avec les autres cours même si celui-ci échoue
-                        }
+                        }   
                     }
                 }
             }
-                
-
             //Section::whereNotNull('moodle_id')->whereNotIn('moodle_id', $moodleSectionIds)->delete();
             //Module::whereNotNull('moodle_id')->whereNotIn('moodle_id', $moodleModuleIds)->delete();
 

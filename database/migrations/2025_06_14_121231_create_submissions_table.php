@@ -6,25 +6,22 @@ use Illuminate\Support\Facades\Schema;
 
 return new class extends Migration
 {
-    /**
-     * Run the migrations.
-     */
-    public function up(): void
+    public function up()
     {
         Schema::create('submissions', function (Blueprint $table) {
             $table->id();
-            $table->enum('status', ['pending', 'corrected'])->default('pending');
-            $table->string('file_path');
             $table->foreignId('assignment_id')->constrained()->onDelete('cascade');
-            $table->foreignId('student_id')->constrained('users')->onDelete('cascade');
+            $table->foreignId('user_id')->constrained()->onDelete('cascade');
+            $table->string('status')->default('draft'); // draft, submitted, graded
+            $table->text('content')->nullable();
+            $table->string('file_path')->nullable();
+            $table->integer('attempt_number')->default(0);
+            $table->timestamp('submitted_at')->nullable();
             $table->timestamps();
         });
     }
 
-    /**
-     * Reverse the migrations.
-     */
-    public function down(): void
+    public function down()
     {
         Schema::dropIfExists('submissions');
     }

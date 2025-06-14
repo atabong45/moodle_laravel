@@ -68,55 +68,102 @@ $iconActiveClasses = 'transform rotate-90 text-blue-700';
                                     </div>
                                     
                                 @elseif ($module->modname == 'assign')
-                                    <div class="space-y-4">
-                                        <!-- Devoir à remettre -->
-                                        <div class="bg-white p-4 rounded-lg border border-orange-200 shadow-sm">
-                                            <div class="flex items-center mb-2">
-                                                <i class="fas fa-tasks text-orange-600 mr-2"></i>
-                                                <h4 class="font-semibold text-orange-800">Devoir à remettre</h4>
-                                            </div>
-                                            <p class="text-gray-700 leading-relaxed">
-                                                {{ $module->modplural ?? 'Aucune description disponible' }}
-                                            </p>
+                                <div class="space-y-4">
+                                    <!-- Devoir à remettre -->
+                                    <div class="bg-white p-4 rounded-lg border border-orange-200 shadow-sm">
+                                        <div class="flex items-center mb-2">
+                                            <i class="fas fa-tasks text-orange-600 mr-2"></i>
+                                            <h4 class="font-semibold text-orange-800">Devoir à remettre</h4>
                                         </div>
-                                        
-                                        <!-- Consignes -->
-                                        <div class="bg-white p-4 rounded-lg border border-green-200 shadow-sm">
-                                            <div class="flex items-center mb-2">
-                                                <i class="fas fa-clipboard-list text-green-600 mr-2"></i>
-                                                <h4 class="font-semibold text-green-800">Consignes</h4>
-                                            </div>
-                                            <p class="text-gray-700 leading-relaxed ">
-                                                {{ $module->file_path ?? 'Aucune consigne disponible' }}
-                                            </p>
+                                        <p class="text-gray-700 leading-relaxed">
+                                            {!! $module->intro ?? 'Aucune description disponible' !!}
+                                        </p>
+                                    </div>
+                                    
+                                    <!-- Consignes -->
+                                    <div class="bg-white p-4 rounded-lg border border-green-200 shadow-sm">
+                                        <div class="flex items-center mb-2">
+                                            <i class="fas fa-clipboard-list text-green-600 mr-2"></i>
+                                            <h4 class="font-semibold text-green-800">Consignes</h4>
                                         </div>
-
-                                        <!-- Bouton de soumission -->
-                                        @if(!Auth::user()->hasRole('ROLE_TEACHER'))
-                                            <div class="flex justify-center mt-4">
-                                                <button onclick="openSubmissionModal('{{ $module->id }}')"
-                                                        class="inline-flex items-center px-4 py-2 bg-purple-600 hover:bg-purple-700 
-                                                            text-white font-medium rounded-lg transition duration-150 ease-in-out
-                                                            shadow-md hover:shadow-lg space-x-2">
-                                                    <i class="fas fa-paper-plane mr-2"></i>
-                                                    <span>Faire une soumission</span>
-                                                </button>
+                                        <p class="text-gray-700 leading-relaxed">
+                                            {!! $module->activity ?? 'Aucune consigne disponible' !!}
+                                        </p>
+                                    </div>
+                                    
+                                    <!-- Fichier PDF de l'assignement -->
+                                    @if ($module->pdf_filename && $module->pdf_url)
+                                    <div class="bg-white p-4 rounded-lg border border-blue-200 shadow-sm">
+                                        <h4 class="text-lg font-medium text-gray-800 mb-3 flex items-center">
+                                            <i class="fas fa-file-pdf text-red-600 mr-2"></i>
+                                            {{ $module->pdf_filename }}
+                                        </h4>
+                                        <div class="flex justify-center">
+                                            <a href="{{ $module->pdf_url }}"
+                                            target="_blank"
+                                            class="inline-flex items-center px-3 py-2 bg-gradient-to-r from-blue-600 to-blue-700 hover:from-blue-700 hover:to-blue-800 text-white font-medium rounded-lg shadow-md hover:shadow-lg transition-all duration-300 transform hover:scale-105">
+                                                <i class="fas fa-file-download mr-2"></i>
+                                                Télécharger le PDF
+                                            </a>
+                                        </div>
+                                    </div>
+                                    @endif
+                                    
+                                    <!-- Dates importantes -->
+                                    {{-- @if ($module->duedate || $module->allowsubmissionsfromdate)
+                                    <div class="bg-white p-4 rounded-lg border border-yellow-200 shadow-sm">
+                                        <div class="flex items-center mb-2">
+                                            <i class="fas fa-calendar-alt text-yellow-600 mr-2"></i>
+                                            <h4 class="font-semibold text-yellow-800">Dates importantes</h4>
+                                        </div>
+                                        <div class="space-y-2 text-sm text-gray-700">
+                                            @if ($module->allowsubmissionsfromdate)
+                                            <div class="flex items-center">
+                                                <i class="fas fa-play-circle text-green-500 mr-2"></i>
+                                                <span><strong>Ouverture :</strong> {{ $module->allowsubmissionsfromdate->format('d/m/Y à H:i') }}</span>
                                             </div>
-                                        @endif
-
-                                        @if(Auth::user()->hasRole('ROLE_TEACHER'))
-                                            <div class="flex justify-center mt-4">
-                                                <a href="{{ route('assignments.submissions', $module->id) }}"
-                                                class="inline-flex items-center px-4 py-2 bg-green-600 hover:bg-green-700 
+                                            @endif
+                                            @if ($module->duedate)
+                                            <div class="flex items-center">
+                                                <i class="fas fa-exclamation-triangle text-red-500 mr-2"></i>
+                                                <span><strong>Date limite :</strong> {{ $module->duedate->format('d/m/Y à H:i') }}</span>
+                                            </div>
+                                            @endif
+                                            @if ($module->gradingduedate)
+                                            <div class="flex items-center">
+                                                <i class="fas fa-check-circle text-blue-500 mr-2"></i>
+                                                <span><strong>Correction avant :</strong> {{ $module->gradingduedate->format('d/m/Y à H:i') }}</span>
+                                            </div>
+                                            @endif
+                                        </div>
+                                    </div>
+                                    @endif --}}
+                                    
+                                    <!-- Bouton de soumission -->
+                                    @if(!Auth::user()->hasRole('ROLE_TEACHER'))
+                                    <div class="flex justify-center mt-4">
+                                        <button onclick="openSubmissionModal('{{ $module->id }}')"
+                                                class="inline-flex items-center px-4 py-2 bg-purple-600 hover:bg-purple-700
                                                     text-white font-medium rounded-lg transition duration-150 ease-in-out
                                                     shadow-md hover:shadow-lg space-x-2">
-                                                    <i class="fas fa-clipboard-check mr-2"></i>
-                                                    <span>Corriger les soumissions</span>
-                                                </a>
-                                            </div>
-                                        @endif
-                                        
+                                            <i class="fas fa-paper-plane mr-2"></i>
+                                            <span>Faire une soumission</span>
+                                        </button>
                                     </div>
+                                    @endif
+                                    
+                                    @if(Auth::user()->hasRole('ROLE_TEACHER'))
+                                    <div class="flex justify-center mt-4">
+                                        <a href="{{ route('assignments.submissions', $module->id) }}"
+                                        class="inline-flex items-center px-4 py-2 bg-green-600 hover:bg-green-700
+                                                text-white font-medium rounded-lg transition duration-150 ease-in-out
+                                                shadow-md hover:shadow-lg space-x-2">
+                                            <i class="fas fa-clipboard-check mr-2"></i>
+                                            <span>Corriger les soumissions</span>
+                                        </a>
+                                    </div>
+                                    @endif
+                                </div>
                                 @endif
                             </div>
                         </div>

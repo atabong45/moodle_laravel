@@ -5,102 +5,123 @@ namespace App\Http\Controllers;
 use App\Models\Submission;
 use App\Models\Assignment;
 use App\Models\Grade;
-use App\Models\SubmissionQuestion;
-use App\Models\User;
+use App\Models\Module;
+use App\Services\MoodleSubmissionService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 
 class SubmissionController extends Controller
 {
-    public function index()
+    protected $submissionService;
+
+    public function __construct(MoodleSubmissionService $submissionService)
     {
-        $submissions = Submission::with(['assignment', 'student'])->get();
-        return view('submissions.index', compact('submissions'));
+        $this->submissionService = $submissionService;
     }
 
-    public function create()
+    public function index($moduleId)
     {
-        $assignments = Assignment::all();
-        $students = User::where('role', 'student')->get();
-        return view('submissions.create', compact('assignments', 'students'));
+        $module = Module::findOrFail($moduleId);
+        $assignment = $module->assignment;
+        
+        if (!$assignment) {
+            return redirect()->back()->with('error', 'No assignment found for this module');
+        }
+
+        // Synchroniser avec Moodle
+        $submissions = $this->submissionService->getSubmissions($assignment->moodle_id);
+        
+        return view('assignment-submissions', [
+            'module' => $module,
+            'submissions' => $submissions,
+            'assignment' => $assignment
+        ]);
     }
 
-    public function store(Request $request)
+    // public function show(Submission $submission)
+    // {
+    //     $submissionQuestions = SubmissionQuestion::where('submission_id', $submission->id)->get();
+    //     return view('submissions.show', compact('submission', 'submissionQuestions'));
+    // }
+
+    public function store(Request $request, $moduleId)
     {
+        $module = Module::findOrFail($moduleId);
+        $assignment = $module->assignment;
+        
         $request->validate([
-            'status' => 'required|string',
-            'file_path' => 'required|string',
-            'assignment_id' => 'required|exists:assignments,id',
-            'student_id' => 'required|exists:users,id',
+            'content' => 'required_without:file|string',
+            'file' => 'required_without:content|file|mimes:pdf,txt|max:5120'
         ]);
 
-        Submission::create($request->all());
-        return redirect()->route('submissions.index')->with('success', 'Submission created successfully.');
-    }
+        $filePath = null;
+        if ($request->hasFile('file')) {
+            $filePath = $request->file('file')->store('submissions');
+        }
 
-    public function show(Submission $submission)
-
-    {
-         // Récupérer toutes les questions liées à la soumission (avec leurs réponses potentielles)
-         $submissionQuestions = SubmissionQuestion::where('submission_id', $submission->id)->get();
-        return view('submissions.show', compact('submission', 'submissionQuestions'));
-    }
-
-    public function edit(Submission $submission)
-    {
-        $assignments = Assignment::all();
-        $students = User::where('role', 'student')->get();
-        return view('submissions.edit', compact('submission', 'assignments', 'students'));
-    }
-
-    public function update(Request $request, Submission $submission)
-    {
-        $request->validate([
-            'status' => 'required|string',
-            'file_path' => 'required|string',
-            'assignment_id' => 'required|exists:assignments,id',
-            'student_id' => 'required|exists:users,id',
+        // Créer la soumission locale
+        $submission = Submission::create([
+            'assignment_id' => $assignment->id,
+            'user_id' => Auth::id(),
+            'content' => $request->content,
+            'file_path' => $filePath,
+            'status' => 'submitted',
+            'submitted_at' => now()
         ]);
 
-        $submission->update($request->all());
-        return redirect()->route('submissions.index')->with('success', 'Submission updated successfully.');
-    }
+        // Synchroniser avec Moodle
+        $success = $this->submissionService->submitAssignment(
+            $assignment->moodle_id,
+            Auth::user()->moodle_id,
+            $request->content,
+            $request->file('file')
+        );
 
-    public function destroy(Submission $submission)
-    {
-        $submission->delete();
-        return redirect()->route('submissions.index')->with('success', 'Submission deleted successfully.');
+        if ($success) {
+            return redirect()->back()->with('success', 'Submission successful!');
+        }
+
+        return redirect()->back()->with('error', 'Failed to submit to Moodle');
     }
 
     public function grade(Request $request, Submission $submission)
-{
-    // Vérifier si l'utilisateur est un enseignant
-    if (!Auth::user()->hasRole('ROLE_TEACHER')) {
-        return redirect()->back()->with('error', 'Vous n\'avez pas les autorisations pour noter cette soumission.');
+    {
+        if (!Auth::user() || !Auth::user()->role === 'ROLE_TEACHER') {
+            return redirect()->back()->with('error', 'Unauthorized action');
+        }
+
+        $request->validate([
+            'grade' => 'required|numeric|min:0|max:20',
+            'feedback' => 'nullable|string'
+        ]);
+
+        // Sauvegarder localement
+        Grade::updateOrCreate(
+            ['submission_id' => $submission->id],
+            [
+                'grade' => $request->grade,
+                'comment' => $request->feedback,
+                'teacher_id' => Auth::id()
+            ]
+        );
+
+        $submission->update(['status' => 'graded']);
+
+        // Synchroniser avec Moodle
+        $moodleAssignmentId = $submission->assignment->moodle_id;
+        $moodleUserId = $submission->user->moodle_id;
+        
+        $success = $this->submissionService->saveGrade(
+            $moodleAssignmentId,
+            $moodleUserId,
+            $request->grade * 5, // Convertir sur 100
+            $request->feedback
+        );
+
+        if ($success) {
+            return redirect()->back()->with('success', 'Grade saved successfully');
+        }
+
+        return redirect()->back()->with('error', 'Grade saved locally but failed to sync with Moodle');
     }
-
-    // Validation des données
-    $request->validate([
-        'grade' => 'required|integer|min:0|max:20',
-        'comment' => 'nullable|string|max:255',
-    ]);
-
-    // Enregistrer la note
-    $grade = Grade::create([
-        'grade' => $request->grade,
-        'comment' => $request->comment,
-        'submission_id' => $submission->id,
-        'teacher_id' => Auth::id(),
-
-    ]);
-
-    $submission->update([
-        'status' => Submission::STATUS_CORRECTED,
-    ]);
-
-    $submission->save();
-
-    return redirect()->route('submissions.show', $submission->id)->with('success', 'Note attribuée avec succès.');
-}
-
 }

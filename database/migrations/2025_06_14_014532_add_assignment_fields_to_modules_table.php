@@ -18,20 +18,10 @@ return new class extends Migration
             $table->timestamp('gradingduedate')->nullable();
             $table->integer('maxattempts')->default(1);
             $table->integer('grade')->default(100);
+            $table->string('pdf_filename')->nullable()->after('gradingduedate');
+            $table->text('pdf_url')->nullable()->after('pdf_filename');
         });
 
-        Schema::create('assignment_files', function (Blueprint $table) {
-            $table->id();
-            $table->foreignId('module_id')->constrained()->onDelete('cascade');
-            $table->string('filename');
-            $table->string('filepath');
-            $table->integer('filesize');
-            $table->text('fileurl');
-            $table->timestamp('timemodified');
-            $table->string('mimetype');
-            $table->boolean('isexternalfile')->default(false);
-            $table->timestamps();
-        });
     }
 
     public function down()
@@ -46,10 +36,10 @@ return new class extends Migration
                 'cutoffdate',
                 'gradingduedate',
                 'maxattempts',
-                'grade'
+                'grade',
+                'pdf_filename',
+                'pdf_url'
             ]);
         });
-
-        Schema::dropIfExists('assignment_files');
     }
 };

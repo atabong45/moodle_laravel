@@ -45,27 +45,37 @@ class MoodleAssignmentService
     /**
      * Récupérer tous les assignments d'un cours
      */
-    public function getAssignmentsByCourseId(int $courseId): array
-    {
-        try {
-            $params = array_merge($this->defaultParams, [
-                'wsfunction' => 'mod_assign_get_assignments',
-                'courseids[0]' => $courseId
-            ]);
 
-            $response = Http::get($this->apiUrl, $params);
-            $data = $response->json();
+public function getAssignmentsByCourseId(int $courseId): array
+{
+    try {
+        $params = array_merge($this->defaultParams, [
+            'wsfunction' => 'mod_assign_get_assignments',
+            'courseids[0]' => $courseId
+        ]);
 
-            if (isset($data['courses']) && !empty($data['courses'])) {
-                return $data['courses'][0]['assignments'] ?? [];
+        $response = Http::get($this->apiUrl, $params);
+        $data = $response->json();
+        // Vérification approfondie pour récupérer les assignments
+        if (isset($data['courses']) && is_array($data['courses']) && !empty($data['courses'])) {
+            $assignments = $data['courses'][0]['assignments'] ?? [];
+
+            // Vérification supplémentaire pour s'assurer que les assignments sont bien un tableau
+            if (is_array($assignments)) {
+                return $assignments;
             }
 
-            return [];
-        } catch (\Exception $e) {
-            Log::error('Erreur API Moodle (getAssignmentsByCourseId): ' . $e->getMessage());
+            Log::warning('Les assignments ne sont pas un tableau valide.', ['course_id' => $courseId]);
             return [];
         }
+
+        Log::warning('Aucun cours trouvé ou réponse API invalide.', ['course_id' => $courseId]);
+        return [];
+    } catch (\Exception $e) {
+        Log::error('Erreur API Moodle (getAssignmentsByCourseId): ' . $e->getMessage(), ['course_id' => $courseId]);
+        return [];
     }
+}
 
     /**
      * Récupérer les détails d'un assignment spécifique
@@ -199,75 +209,63 @@ class MoodleAssignmentService
 
 
 
-    public function getAssignmentDetails(int $moduleId, int $courseId): ?array
-    {
-        try {
-            // 1. Récupérer tous les assignments du cours
-            $assignments = $this->getAssignmentsByCourseId($courseId);
-            
-            if (empty($assignments)) {
-                Log::warning("Aucun assignment trouvé pour le cours", ['course_id' => $courseId]);
-                return null;
-            }
+public function getAssignmentDetails(int $moduleId, int $courseId): ?array
+{
+    try {
+        // 1. Récupérer tous les assignments du cours
+        $assignments = $this->getAssignmentsByCourseId($courseId);
+        Log::info("Assignments trouvés pour le cours ", $assignments);
 
-            // 2. Trouver l'assignment correspondant au module_id (cmid)
-            foreach ($assignments as $assignment) {
-                if ($assignment['cmid'] == $moduleId) {
-                    // 3. Récupérer le fichier PDF (premier fichier d'intro si existe)
-                    $pdfData = null;
-                    if (!empty($assignment['introattachments'])) {
-                        $firstFile = $assignment['introattachments'][0];
-                        if ($firstFile['mimetype'] === 'application/pdf') {
-                            $pdfData = [
-                                'filename' => $firstFile['filename'],
-                                'fileurl' => str_replace(
-                                    '?forcedownload=1', 
-                                    '?token='.$this->token, 
-                                    $firstFile['fileurl']
-                                ),
-                                'filesize' => $this->formatFileSize($firstFile['filesize'])
-                            ];
-                        break;
-                        }
+        // 2. Trouver l'assignment correspondant au module_id (cmid)
+        foreach ($assignments as $assignment) {
+            if (isset($assignment['cmid']) && $assignment['cmid'] == $moduleId) {
+                Log::info("Assignment trouvé:", $assignment);
+                
+                // 3. Récupérer le fichier PDF (premier fichier d'intro si existe)
+                $pdfData = null;
+                if (!empty($assignment['introattachments'])) {
+                    $firstFile = $assignment['introattachments'][0];
+                    if ($firstFile['mimetype'] === 'application/pdf') {
+                        $pdfData = [
+                            'filename' => $firstFile['filename'],
+                            'fileurl' => str_replace(
+                                '?forcedownload=1', 
+                                '?token='.$this->token, 
+                                $firstFile['fileurl']
+                            ),
+                            'filesize' => $this->formatFileSize($firstFile['filesize'])
+                        ];
                     }
-
-                    // 4. Formater les dates
-                    $dates = [
-                        'duedate' => $assignment['duedate'] ? date('Y-m-d H:i:s', $assignment['duedate']) : null,
-                        'allowsubmissionsfromdate' => $assignment['allowsubmissionsfromdate'] ? date('Y-m-d H:i:s', $assignment['allowsubmissionsfromdate']) : null,
-                        'gradingduedate' => $assignment['gradingduedate'] ? date('Y-m-d H:i:s', $assignment['gradingduedate']) : null
-                    ];
-
-                    // 5. Retourner les données structurées
-                    return [
-                        'id' => $assignment['id'] ?? null,
-                        'name' => $assignment['name'] ?? '',
-                        'intro' => $this->cleanHtmlContent($assignment['intro'] ?? ''),
-                        'activity' => $this->cleanHtmlContent($assignment['activity'] ?? ''),
-                        'duedate' => $assignment['duedate'] ?? null,  // Peut être null
-                        'allowsubmissionsfromdate' => $assignment['allowsubmissionsfromdate'] ?? null,
-                        'gradingduedate' => $assignment['gradingduedate'] ?? null,
-                        'maxattempts' => $assignment['maxattempts'] ?? 1,
-                        'grade' => $assignment['grade'] ?? 100,
-                        'pdf_file' => $pdfData
-                    ];
                 }
+
+                // 4. Formater les données à retourner
+                $result = [
+                    'id' => $assignment['id'] ?? null,
+                    'name' => $assignment['name'] ?? '',
+                    'intro' => $this->cleanHtmlContent($assignment['intro'] ?? ''),
+                    'activity' => $this->cleanHtmlContent($assignment['activity'] ?? ''),
+                    'duedate' => $assignment['duedate'] ?? null,
+                    'allowsubmissionsfromdate' => $assignment['allowsubmissionsfromdate'] ?? null,
+                    'gradingduedate' => $assignment['gradingduedate'] ?? null,
+                    'maxattempts' => $assignment['maxattempts'] ?? 1,
+                    'grade' => $assignment['grade'] ?? 100,
+                    'pdf_file' => $pdfData
+                ];
+
+                //Log::info('Données de l\'assignment à retourner:', $result);
+                return $result;
             }
-
-            Log::warning("Assignment non trouvé pour le module", [
-                'module_id' => $moduleId,
-                'course_id' => $courseId
-            ]);
-            return null;
-
-        } catch (\Exception $e) {
-            Log::error('Erreur dans getAssignmentDetails: '.$e->getMessage(), [
-                'module_id' => $moduleId,
-                'course_id' => $courseId
-            ]);
-            return null;
         }
+
+        return null;
+    } catch (\Exception $e) {
+        Log::error('Erreur dans getAssignmentDetails: '.$e->getMessage(), [
+            'module_id' => $moduleId,
+            'course_id' => $courseId
+        ]);
+        return null;
     }
+}
 
     // Fonctions utilitaires ajoutées
     private function formatFileSize(int $bytes): string 
