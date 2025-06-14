@@ -12,6 +12,7 @@ use App\Services\MoodleCourseService;
 use App\Services\MoodleUserService;
 use App\Services\MoodleSectionService;
 use App\Services\MoodleModuleService;
+use App\Services\MoodleAssignmentService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Storage;
@@ -24,19 +25,23 @@ class SynchronisationController extends Controller
     protected $moodleSectionService;
     protected $moodleModuleService;
     protected $logFilePath;
+    protected $moodleAssignmentService;
+    
 
     public function __construct(
         MoodleCourseService $moodleCourseService,
         MoodleUserService $moodleUserService,
         MoodleCategoryService $moodleCategoryService,
         MoodleSectionService $moodleSectionService,
-        MoodleModuleService $moodleModuleService
+        MoodleModuleService $moodleModuleService,
+        MoodleAssignmentService $moodleAssignmentService 
     ) {
         $this->moodleCourseService = $moodleCourseService;
         $this->moodleUserService = $moodleUserService;
         $this->moodleCategoryService = $moodleCategoryService;
         $this->moodleSectionService = $moodleSectionService;
         $this->moodleModuleService = $moodleModuleService;
+        $this->moodleAssignmentService = $moodleAssignmentService;
         $this->logFilePath = storage_path('logs/moodle_actions.txt');
     }
 
@@ -49,6 +54,243 @@ class SynchronisationController extends Controller
             // Exécuter les actions à partir du fichier de log
             $this->processLoggedActions();
         
+            // Synchronisation des catégories
+            $moodleCategories = $this->moodleCategoryService->getToutesCategories();
+            $moodleCategoryIds = array_column($moodleCategories, 'id');
+            foreach ($moodleCategories as $moodleCategory) {
+                // Vérifiez si une catégorie avec le même moodle_id existe déjà
+                $existingCategory = Category::where('moodle_id', $moodleCategory['id'])->first();
+
+                if ($existingCategory) {
+                    // Mettre à jour l'enregistrement existant
+                    $existingCategory->update([
+                        'name' => $moodleCategory['name'],
+                    ]);
+                } else {
+                    // Si moodle_id est null mais name correspond, mettre à jour
+                    $existingCategoryByName = Category::where('moodle_id', null)
+                        ->where('name', $moodleCategory['name'])
+                        ->first();
+
+                    if ($existingCategoryByName) {
+                        $existingCategoryByName->update([
+                            'moodle_id' => $moodleCategory['id'],
+                        ]);
+                    } else {
+                        // Créer un nouvel enregistrement
+                        Category::create([
+                             'moodle_id' => $moodleCategory['id'],
+                            'name' => $moodleCategory['name'],
+                        ]);
+                    }
+                }
+            }
+            // Supprimer les catégories pour lesquelles moodle_id n'est pas null mais qui ne sont pas retrouvées dans Moodle
+            Category::whereNotNull('moodle_id')->whereNotIn('moodle_id', $moodleCategoryIds)->delete();
+
+            // Synchronisation des cours
+            $moodleCourses = $this->moodleCourseService->getAllCourses();
+            $moodleCourseIds = array_column($moodleCourses, 'id');
+            foreach (array_slice($moodleCourses, 1) as $moodleCourse) {
+                 // Récupérer l'ID de la catégorie locale correspondant au moodle_id de la catégorie Moodle
+                $categoryId = Category::where('moodle_id', $moodleCourse['categoryid'])->value('id');
+
+                // Vérifiez que la catégorie existe avant de mettre à jour le cours
+                if (in_array($moodleCourse['categoryid'], $moodleCategoryIds)) {
+                     // Vérifiez si un cours avec le même moodle_id existe déjà
+                $existingCourse = Course::where('moodle_id', $moodleCourse['id'])->first();
+
+                if ($existingCourse) {
+                    // Mettre à jour l'enregistrement existant
+                    $existingCourse->update([
+                        'fullname' => $moodleCourse['fullname'],
+                        'shortname' => $moodleCourse['shortname'],
+                        'summary' => $moodleCourse['summary'],
+                        'numsections' => $moodleCourse['numsections'],
+                        'startdate' => $moodleCourse['startdate'] == 0 ? null : $moodleCourse['startdate'],
+                        'enddate' => $moodleCourse['enddate'] == 0 ? null : $moodleCourse['enddate'],
+                        'teacher_id' => $moodleCourse['teacher_id'] ?? null,
+                        'category_id' => $categoryId,
+                        'image' => $moodleCourse['image'] ?? null,
+                    ]);
+                } else {
+                    // Si moodle_id est null mais fullname correspond, mettre à jour
+                    $existingCourseByName = Course::where('moodle_id', null)
+                        ->where('fullname', $moodleCourse['fullname'])
+                        ->first();
+                    if ($existingCourseByName) {
+                        $existingCourseByName->update([
+                            'moodle_id' => $moodleCourse['id'],
+                            'shortname' => $moodleCourse['shortname'],
+                            'summary' => $moodleCourse['summary'],
+                            'numsections' => $moodleCourse['numsections'],
+                            'startdate' => $moodleCourse['startdate'] == 0 ? null : $moodleCourse['startdate'],
+                            'enddate' => $moodleCourse['enddate'] == 0 ? null : $moodleCourse['enddate'],
+                            'teacher_id' => $moodleCourse['teacher_id'] ?? null,
+                            'category_id' => $categoryId,
+                            'image' => $moodleCourse['image'] ?? null,
+                        ]);
+                    } else {
+                        // Créer un nouvel enregistrement
+                        Course::create([
+                            'moodle_id' => $moodleCourse['id'],
+                            'fullname' => $moodleCourse['fullname'],
+                            'shortname' => $moodleCourse['shortname'],
+                            'summary' => $moodleCourse['summary'],
+                            'numsections' => $moodleCourse['numsections'],
+                            'startdate' => $moodleCourse['startdate'] == 0 ? null : $moodleCourse['startdate'],
+                            'enddate' => $moodleCourse['enddate'] == 0 ? null : $moodleCourse['enddate'],
+                            'teacher_id' => $moodleCourse['teacher_id'] ?? null,
+                            'category_id' => $categoryId,
+                            'image' => $moodleCourse['image'] ?? null,
+                        ]);
+                    }
+                }
+                } else {
+                    Log::warning('La catégorie avec le moodle_id ' . $moodleCourse['categoryid'] . ' n\'existe pas.');
+                }
+            }
+            // Supprimer les cours pour lesquels moodle_id n'est pas null mais qui ne sont pas retrouvés dans Moodle
+            Course::whereNotNull('moodle_id')->whereNotIn('moodle_id', $moodleCourseIds)->delete();
+
+            //Synchronisation des utilisateurs
+            $moodleUsers = $this->moodleUserService->getUsers();
+            $moodleUserIds = array_column($moodleUsers['users'], 'id');
+            foreach ($moodleUsers['users'] as $moodleUser) {
+                 $existingUser = User::where('moodle_id', $moodleUser['id'])->first();
+
+                if ($existingUser) {
+                    $existingUser->update([
+                        'name' => $moodleUser['fullname'],
+                        'email' => $moodleUser['email'],
+                        'password' => bcrypt('password'),
+                        'profile_picture' => $moodleUser['profileimageurl'] ?? null,
+                    ]);
+                } else {
+                    $existingUserByEmail = User::where('moodle_id', null)
+                        ->where('email', $moodleUser['email'])
+                        ->first();
+
+                    if ($existingUserByEmail) {
+                        $existingUserByEmail->update([
+                            'moodle_id' => $moodleUser['id'],
+                            'name' => $moodleUser['fullname'],
+                            'password' => bcrypt('defaultpassword'),
+                            'profile_picture' => $moodleUser['profileimageurl'] ?? null,
+                        ]);
+                    } else {
+                        User::create([
+                                'moodle_id' => $moodleUser['id'],
+                                'name' => $moodleUser['fullname'],
+                                'email' => $moodleUser['email'],
+                                'password' => bcrypt('defaultpassword'),
+                                'profile_picture' => $moodleUser['profileimageurl'] ?? null,
+                            ]);
+                    }
+                }
+            }
+            // Supprimer les utilisateurs pour lesquels moodle_id n'est pas null mais qui ne sont pas retrouvés dans Moodle
+            User::whereNotNull('moodle_id')->whereNotIn('moodle_id', $moodleUserIds)->delete();
+
+            // Synchronisation des sections depuis Moodle vers le client
+            $moodleCourses = $this->moodleCourseService->getAllCourses();
+            foreach (array_slice($moodleCourses, 1)  as $moodleCourse) {
+                $sections = $this->moodleSectionService->listerSectionsCours($moodleCourse['id']);
+                $moodleSectionIds = array_column($sections, 'id');
+
+                foreach ($sections as $section) {
+                    $courseId = Course::where('moodle_id', $moodleCourse['id'])->value('id');
+
+                    $existingSection = Section::where('moodle_id', $section['id'])->first();
+
+                    if ($existingSection) {
+                        $existingSection->update([
+                            'name' => $section['name'],
+                            'course_id' => $courseId,
+                        ]);
+                    } else {
+                        $existingSectionByName = Section::where('moodle_id', null)
+                            ->where('name', $section['name'])
+                            ->where('course_id', $courseId)
+                            ->first();
+
+                        if ($existingSectionByName) {
+                            $existingSectionByName->update([
+                                'moodle_id' => $section['id'],
+                            ]);
+                        } else {
+                            Section::create([
+                                'moodle_id' => $section['id'],
+                                'name' => $section['name'],
+                                'course_id' => $courseId,
+                            ]);
+                        }
+                    }
+
+                    $modules = $section['modules'];
+                    $moodleModuleIds = array_column($modules, 'id');
+
+                    foreach ($modules as $module) {
+                        $sectionId = Section::where('moodle_id', $section['id'])->value('id');
+                        $courseId = Course::where('moodle_id', $moodleCourse['id'])->value('id');
+
+                        $existingModule = Module::where('moodle_id', $module['id'])->first();
+
+                        if ($existingModule) {
+                            $existingModule->update([
+                                'name' => $module['name'],
+                                'modname' => $module['modname'],
+                                'modplural' => $module['modplural'] ?? 'Default Value',
+                                'downloadcontent' => $module['downloadcontent'] ?? '', 
+                                'file_path' => isset($module['contents'][0]['fileurl']) 
+                                                    ? str_replace('?forcedownload=1', '?token=' . config('moodle.api_token'), $module['contents'][0]['fileurl']) 
+                                                    : '',
+                                'section_id' => $sectionId,
+                                'course_id' => $courseId,
+                            ]);
+                        } else {
+                            $existingModuleByName = Module::where('moodle_id', null)
+                                ->where('name', $module['name'])
+                                ->where('section_id', $sectionId)
+                                ->first();
+
+                            if ($existingModuleByName) {
+                                $existingModuleByName->update([
+                                    'moodle_id' => $module['id'],
+                                ]);
+                            } else {
+                                Module::create([
+                                    'moodle_id' => $module['id'],
+                                    'name' => $module['name'],
+                                    'modname' => $module['modname'],
+                                    'modplural' => $module['modplural'] ?? 'Default Value',
+                                    'downloadcontent' => $module['downloadcontent'] ?? '', 
+                                    'file_path' => isset($module['contents'][0]['fileurl']) 
+                                                        ? str_replace('?forcedownload=1', '?token=' . config('moodle.api_token'), $module['contents'][0]['fileurl']) 
+                                                        : '', 
+                                    'section_id' => $sectionId,
+                                    'course_id' => $courseId,
+                                ]);
+                            }
+                        }
+                    }
+                }
+                // Synchronisation des assignments après la synchronisation des modules
+                try {
+                    Log::info("Début de la synchronisation des assignments pour le cours", ['course_id' => $moodleCourse['id']]);
+                    $this->moodleAssignmentService->syncAssignmentsWithModules($moodleCourse['id']);
+                    Log::info("Synchronisation des assignments terminée pour le cours", ['course_id' => $moodleCourse['id']]);
+                } catch (\Exception $e) {
+                    Log::error("Erreur lors de la synchronisation des assignments pour le cours {$moodleCourse['id']}: " . $e->getMessage());
+                    // Continue avec les autres cours même si celui-ci échoue
+                }
+            }
+                
+
+            //Section::whereNotNull('moodle_id')->whereNotIn('moodle_id', $moodleSectionIds)->delete();
+            //Module::whereNotNull('moodle_id')->whereNotIn('moodle_id', $moodleModuleIds)->delete();
+
+
 
             return redirect()->back()->with('success', 'Synchronisation terminée !');
         } 
@@ -194,23 +436,39 @@ case 'section_delete':
             
             // Gestion des modules
             case 'module_create':
+                //$moodleId = Section::find($data['section_id'])?->course?->moodle_id;
+                $section = Section::find($data['section_id']);
+                if (!$section) {
+                    Log::error('Section introuvable', ['section_id' => $data['section_id']]);
+                    return false;
+                }
+
+                $course = $section->course;
+                if (!$course) {
+                    Log::error('Cours associé à la section introuvable', ['section_id' => $data['section_id']]);
+                    return false;
+                }
+
+                $moodleId = $course->moodle_id;
+                if (!$moodleId) {
+                    Log::error('moodle_id du cours non défini', ['course_id' => $course->id]);
+                    return false;
+                }
+
+                Log::info('Informations récupérées', [
+                    'section_id' => $data['section_id'],
+                    'course_id' => $course->id,
+                    'moodle_id' => $moodleId
+                ]);
+                // Ajouter des paramètres spécifiques selon le type de module
                 $moduleData = [
-                    'course' => $data['course_id'],
-                    'section' => $data['section_id'],
-                    'name' => $data['name'],
-                    'modname' => $data['modname'],
-                    'modplural' => $data['modplural'] ?? $data['modname'] . 's',
-                    'downloadcontent' => $data['downloadcontent'] ?? 0,
+                    'file_path' => $data['file_path'],
+                    'modplural' => $data['modplural'] ?? ($data['modname'] . 's'), // Fallback si manquant
+                    'downloadcontent' => 1,
                 ];
                 
-                // Ajouter des paramètres spécifiques selon le type de module
-                if ($data['modname'] === 'resource') {
-                    $moduleData['intro'] = $data['summary'] ?? '';
-                    $moduleData['files'] = $data['file_path'] ?? '';
-                }
-                
                 return $this->moodleModuleService->creerModule(
-                    $data['course_id'],
+                    $moodleId,
                     $data['modname'],
                     $data['name'],
                     $moduleData
