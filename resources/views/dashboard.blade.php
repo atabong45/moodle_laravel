@@ -1,379 +1,323 @@
 @extends('layouts.app')
 
+@section('title', 'Tableau de bord')
+
 @section('content')
-<div class="container w-4/5 mt-10 mx-auto flex flex-col justify-center gap-4 bg-white p-6 rounded-2xl">
-    <h1 class='text-3xl font-bold'>Tableau de bord</h1>
-    <hr class="w-full h-[2px] mt-2 mb-4 bg-black" />
-    <div class="rounded-md border border-gray-300 p-4">
-        <div>
-            <h2 class="text-2xl font-bold mb-4">Chronologie</h2>
-            <div class="flex gap-2">
-                <select name="duedate" id="duedate" class="rounded-md text-gray-700">
-                    <optgroup label="General">
-                        <option value="all">Toutes</option>
-                        <option value="overdue">En retard</option>
-                    </optgroup>
-                    <optgroup label="Due date">
-                        <option value="7d">7 prochains jours</option>
-                        <option value="30d">30 prochains jours</option>
-                        <option value="3m">3 prochains mois</option>
-                        <option value="6m">6 prochains mois</option>
-                    </optgroup>
-                </select>
-                <select name="dates" id="dates" class="rounded-md text-gray-700">
-                    <option value="dates">Trier par dates</option>
-                    <option value="courses">Trier par cours</option>
-                </select>
-                <input type="text" placeholder="Rechercher par type d'activité ou par nom" class="rounded-md text-gray-700 px-2 py-1 w-96 ml-auto">
-            </div>
-        </div>
-        <div class="flex flex-col gap-2 justify-center items-center border-t border-gray-400 mt-8 py-8 text-gray-400">
-            <div>
-                <i class="fa-regular fa-file-lines text-8xl"></i>
-            </div>
-            <span class="text-xl">Aucune activité active</span>
-        </div>
-    </div>
-    <div class="rounded-md border border-gray-300 p-4">
-        <h2 class="text-2xl font-bold mb-4">Calendrier</h2>
-        <div class="flex flex-col gap-2">
-            <div class="flex justify-between">
-                <select name="course-category" id="course-category" class="rounded-md text-gray-700">
-                    <option value="all">Tous les cours</option>
-                    @foreach ($courses as $course)
-                        <option value="{{ $course->id }}">{{ $course->fullname }}</option>
-                    @endforeach
-                </select>
-                <x-button id="openModal" full='true'>
-                    Nouvel évènement
-                </x-button>
-            </div>
-            <div>
-                <div class="bg-gray-100 flex items-center justify-center">
-                    <div class="w-11/12 mx-auto p-4">
-                        <div class="bg-white shadow-lg rounded-lg overflow-hidden">
-                            <div class="flex items-center justify-between px-6 py-3 bg-primary font-bold">
-                                <button id="prevMonth" class="text-white">Précédent</button>
-                                <h2 id="currentMonth" class="text-white"></h2>
-                                <button id="nextMonth" class="text-white">Suivant</button>
-                            </div>
-                            <div class="grid grid-cols-7 gap-2 p-4" id="calendar">
-                                <!-- Calendar Days Go Here -->
-                            </div>
+<div class="bg-gray-50 min-h-screen">
+    <div class="container max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
 
-                            <!-- Modal -->
-                            <div id="modal" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center hidden">
-                                <div class="bg-white p-6 rounded shadow-lg relative w-96">
-                                    <button id="closeModal" class="absolute top-2 right-2 text-gray-600 hover:text-black text-2xl">
-                                        &times;
-                                    </button>
-                                    <form action="/events" method="POST" class="space-y-4" id="eventForm">
-                                        @csrf
-                                        <h2 class="text-xl font-bold">Create a New Event</h2>
+        <!-- En-tête de la page -->
+        <header class="mb-10">
+            <h1 class="text-4xl md:text-5xl font-extrabold text-gray-900 tracking-tight">
+                Tableau de bord
+            </h1>
+            <p class="mt-2 text-lg text-gray-600">Votre centre de contrôle pour les activités et événements.</p>
+        </header>
 
-                                        <div>
-                                            <label for="title" class="block text-sm font-medium text-gray-700">Title</label>
-                                            <input type="text" id="title" name="title" required
-                                                class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:ring-indigo-500 focus:border-indigo-500">
-                                        </div>
+        <div class="grid grid-cols-1 lg:grid-cols-3 gap-8 items-start">
 
-                                        <div>
-                                            <label for="date" class="block text-sm font-medium text-gray-700">Date & Time</label>
-                                            <input type="datetime-local" id="date" name="date" required
-                                                class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:ring-indigo-500 focus:border-indigo-500">
-                                        </div>
+            <!-- Colonne de gauche : Chronologie -->
+            <div class="lg:col-span-1 space-y-8">
+                <div class="bg-white p-6 rounded-2xl shadow-lg border border-gray-200">
+                    <h2 class="text-2xl font-bold text-gray-800 mb-6">Chronologie des activités</h2>
 
-                                        <div>
-                                            <label for="type" class="block text-sm font-medium text-gray-700">Type</label>
-                                            <select id="type" name="type" onchange="toggleFields()"
-                                                class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:ring-indigo-500 focus:border-indigo-500">
-                                                <option value="utilisateur" selected>Utilisateur</option>
-                                                <option value="cours">Cours</option>
-                                                <option value="categorie">Catégorie</option>
-                                                <option value="site">Site</option>
-                                            </select>
-                                        </div>
-
-                                        <div id="courseField" style="display: none;">
-                                            <label for="course_id" class="block text-sm font-medium text-gray-700">Course</label>
-                                            <select id="course_id" name="course_id"
-                                                class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:ring-indigo-500 focus:border-indigo-500">
-                                                <option value="">Select Course</option>
-                                                @foreach ($courses as $course)
-                                                    <option value="{{ $course->id }}">{{ $course->fullname }}</option>
-                                                @endforeach
-                                            </select>
-                                        </div>
-
-                                        <div id="categoryField" style="display: none;">
-                                            <label for="category_id" class="block text-sm font-medium text-gray-700">Category</label>
-                                            <select id="category_id" name="category_id"
-                                                class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:ring-indigo-500 focus:border-indigo-500">
-                                                <option value="">Select Category</option>
-                                                @foreach ($categories as $category)
-                                                    <option value="{{ $category->id }}">{{ $category->name }}</option>
-                                                @endforeach
-                                            </select>
-                                        </div>
-
-                                        <button type="submit"
-                                            class="w-full bg-blue-600 text-white py-2 px-4 rounded-md hover:bg-blue-700">
-                                            Save
-                                        </button>
-                                    </form>
-                                </div>
-                            </div>
+                    <!-- Filtres -->
+                    <div class="space-y-4 mb-8">
+                        <div>
+                            <label for="timeline-filter" class="text-sm font-medium text-gray-500">Échéance</label>
+                            <select id="timeline-filter" class="mt-1 block w-full rounded-lg border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500">
+                                <optgroup label="Général">
+                                    <option value="all">Toutes</option>
+                                    <option value="overdue">En retard</option>
+                                </optgroup>
+                                <optgroup label="Prochains jours">
+                                    <option value="7d">7 jours</option>
+                                    <option value="30d">30 jours</option>
+                                </optgroup>
+                            </select>
                         </div>
+                        <div>
+                            <label for="timeline-sort" class="text-sm font-medium text-gray-500">Trier par</label>
+                            <select id="timeline-sort" class="mt-1 block w-full rounded-lg border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500">
+                                <option value="dates">Dates</option>
+                                <option value="courses">Cours</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <!-- État vide -->
+                    <div class="flex flex-col gap-4 justify-center items-center border-t border-gray-200 mt-8 py-12 text-gray-400 text-center">
+                        <i class="far fa-calendar-check text-6xl text-gray-300"></i>
+                        <span class="text-lg font-medium">Aucune activité à venir</span>
+                        <p class="text-sm">Les devoirs et dates limites apparaîtront ici.</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Colonne de droite : Calendrier -->
+            <div class="lg:col-span-2 bg-white p-6 rounded-2xl shadow-lg border border-gray-200">
+                <div class="flex flex-wrap items-center justify-between gap-4 mb-6">
+                    <h2 class="text-2xl font-bold text-gray-800">Calendrier</h2>
+                    <div class="flex items-center gap-4">
+                        <select id="course-category" class="rounded-lg border-gray-300 shadow-sm text-sm focus:border-indigo-500 focus:ring-indigo-500">
+                            <option value="all">Tous les cours</option>
+                            @foreach ($courses as $course)
+                                <option value="{{ $course->id }}">{{ $course->fullname }}</option>
+                            @endforeach
+                        </select>
+                        <button id="openModalBtn" class="inline-flex items-center gap-2 px-4 py-2 bg-indigo-600 text-white font-semibold text-sm rounded-lg hover:bg-indigo-700 transition-colors shadow-sm">
+                            <i class="fas fa-plus"></i>
+                            Nouvel événement
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Calendrier -->
+                <div class="select-none">
+                    <div class="flex items-center justify-between px-4 py-3 bg-gray-100 rounded-t-lg">
+                        <button id="prevMonth" class="p-2 rounded-full hover:bg-gray-200 transition-colors"><i class="fas fa-chevron-left text-gray-600"></i></button>
+                        <h2 id="currentMonth" class="text-lg font-bold text-gray-800"></h2>
+                        <button id="nextMonth" class="p-2 rounded-full hover:bg-gray-200 transition-colors"><i class="fas fa-chevron-right text-gray-600"></i></button>
+                    </div>
+                    <div class="grid grid-cols-7 text-center text-sm font-medium text-gray-500 border-l border-r border-gray-200">
+                        <div class="py-2">Lun</div><div class="py-2">Mar</div><div class="py-2">Mer</div><div class="py-2">Jeu</div><div class="py-2">Ven</div><div class="py-2">Sam</div><div class="py-2">Dim</div>
+                    </div>
+                    <div class="grid grid-cols-7 h-[500px] text-sm" id="calendar">
+                        <!-- Les jours du calendrier seront injectés ici par JS -->
                     </div>
                 </div>
             </div>
         </div>
     </div>
+
+    <!-- Modal pour créer un événement -->
+    <div id="eventModal" class="fixed inset-0 bg-black bg-opacity-60 backdrop-blur-sm flex items-center justify-center hidden z-50 p-4">
+        <div id="modalContent" class="bg-white p-8 rounded-2xl shadow-2xl w-full max-w-md transform transition-all opacity-0 -translate-y-4">
+            <div class="flex justify-between items-center mb-6">
+                <h2 class="text-xl font-bold text-gray-900">Créer un nouvel événement</h2>
+                <button id="closeModalBtn" class="text-gray-400 hover:text-gray-700 transition-colors"><i class="fas fa-times fa-lg"></i></button>
+            </div>
+            <form id="eventForm" class="space-y-4">
+                @csrf
+                <div>
+                    <label for="title" class="block text-sm font-medium text-gray-700">Titre</label>
+                    <input type="text" id="title" name="title" required class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:ring-indigo-500 focus:border-indigo-500">
+                </div>
+                <div>
+                    <label for="date" class="block text-sm font-medium text-gray-700">Date & Heure</label>
+                    <input type="datetime-local" id="date" name="date" required class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:ring-indigo-500 focus:border-indigo-500">
+                </div>
+                <div>
+                    <label for="type" class="block text-sm font-medium text-gray-700">Type</label>
+                    <select id="type" name="type" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:ring-indigo-500 focus:border-indigo-500">
+                        <option value="utilisateur" selected>Utilisateur</option>
+                        <option value="cours">Cours</option>
+                        <option value="categorie">Catégorie</option>
+                        <option value="site">Site</option>
+                    </select>
+                </div>
+                <div id="courseField" style="display: none;">
+                    <label for="course_id" class="block text-sm font-medium text-gray-700">Cours</label>
+                    <select id="course_id" name="course_id" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:ring-indigo-500 focus:border-indigo-500">
+                        @foreach ($courses as $course) <option value="{{ $course->id }}">{{ $course->fullname }}</option> @endforeach
+                    </select>
+                </div>
+                <div id="categoryField" style="display: none;">
+                    <label for="category_id" class="block text-sm font-medium text-gray-700">Catégorie</label>
+                    <select id="category_id" name="category_id" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:ring-indigo-500 focus:border-indigo-500">
+                        @foreach ($categories as $category) <option value="{{ $category->id }}">{{ $category->name }}</option> @endforeach
+                    </select>
+                </div>
+                <div class="pt-4 flex justify-end">
+                    <button type="submit" class="w-full bg-indigo-600 text-white py-2 px-4 rounded-lg font-semibold hover:bg-indigo-700 transition-colors">
+                        Enregistrer l'événement
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
 </div>
 @endsection
 
-@if(session('success'))
-    <script>
-        alert('Vous avez créé un nouvel évènement.');
-    </script>
-@endif
-
 @section('script')
 <script>
-    let eventsElements = [];
+document.addEventListener('DOMContentLoaded', function () {
+    // ===================================
+    // == Éléments du DOM et État Initial ==
+    // ===================================
+    const calendarEl = document.getElementById('calendar');
+    const currentMonthEl = document.getElementById('currentMonth');
+    const prevMonthBtn = document.getElementById('prevMonth');
+    const nextMonthBtn = document.getElementById('nextMonth');
+    const openModalBtn = document.getElementById('openModalBtn');
+    const closeModalBtn = document.getElementById('closeModalBtn');
+    const eventModal = document.getElementById('eventModal');
+    const modalContent = document.getElementById('modalContent');
+    const eventForm = document.getElementById('eventForm');
+    const typeSelect = document.getElementById('type');
 
-    async function fetchEvents() {
-        const response = await fetch('/events');
-        const events = await response.json();
+    let state = {
+        date: new Date(),
+        events: []
+    };
 
-        events.forEach(event => {
-            const eventElement = document.createElement('div');
-            eventElement.className = `event event-${event.id} text-sm`;
-            eventElement.innerText = event.title ?? event.name;
+    // ===================================
+    // == Fonctions Principales         ==
+    // ===================================
 
-            const li = document.createElement('li');
-            li.className = 'flex gap-1 items-center w-fit before:content-["•"] text-nowrap';
-            li.appendChild(eventElement);
+    /**
+     * Affiche une notification non-bloquante
+     * @param {string} message - Le message à afficher
+     * @param {string} type - 'success' (vert) ou 'error' (rouge)
+     */
+    function showNotification(message, type = 'success') {
+        const bgColor = type === 'success' ? 'bg-green-500' : 'bg-red-500';
+        const icon = type === 'success' ? 'fa-check-circle' : 'fa-times-circle';
 
-            let date = new Date(event.date ?? (event.timestart * 1000));
+        const notification = document.createElement('div');
+        notification.className = `fixed top-5 right-5 ${bgColor} text-white px-5 py-3 rounded-lg shadow-xl transform transition-all duration-300 translate-x-full`;
+        notification.innerHTML = `<i class="fas ${icon} mr-2"></i> ${message}`;
 
-            eventsElements.push({
-                'event': event,
-                'day': date.getDate(),
-                'month': date.getMonth(),
-                'year': date.getFullYear(),
-                'element': li,
-            });
-        });
+        document.body.appendChild(notification);
+
+        // Animation d'entrée
+        setTimeout(() => {
+            notification.classList.remove('translate-x-full');
+        }, 10);
+
+        // Animation de sortie
+        setTimeout(() => {
+            notification.classList.add('translate-x-full');
+            setTimeout(() => notification.remove(), 300);
+        }, 3000);
     }
 
-    // Function to generate the calendar for a specific month and year
-    function generateCalendar(year, month) {
-        const calendarElement = document.getElementById('calendar');
-        const currentMonthElement = document.getElementById('currentMonth');
+    /**
+     * Récupère les événements depuis le serveur
+     */
+    async function fetchEvents() {
+        try {
+            const response = await fetch('/events');
+            if (!response.ok) throw new Error('Network response was not ok');
+            state.events = await response.json();
+            renderCalendar();
+        } catch (error) {
+            console.error('Failed to fetch events:', error);
+            showNotification("Erreur lors du chargement des événements.", 'error');
+        }
+    }
 
-        // Create a date object for the first day of the specified month
-        const firstDayOfMonth = new Date(year, month, 1);
+    /**
+     * Génère et affiche le calendrier pour le mois en cours
+     */
+    function renderCalendar() {
+        const year = state.date.getFullYear();
+        const month = state.date.getMonth();
+
+        const firstDayOfMonth = new Date(year, month, 1).getDay(); // 0=Sun, 1=Mon...
+        const adjustedFirstDay = (firstDayOfMonth === 0) ? 6 : firstDayOfMonth - 1; // 0=Mon...
         const daysInMonth = new Date(year, month + 1, 0).getDate();
 
-        // Clear the calendar
-        calendarElement.innerHTML = '';
+        currentMonthEl.textContent = state.date.toLocaleDateString('fr-FR', { month: 'long', year: 'numeric' });
+        calendarEl.innerHTML = '';
 
-        // Set the current month text
-        const monthNames = ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December'];
-        currentMonthElement.innerText = `${monthNames[month]} ${year}`;
-
-        // Calculate the day of the week for the first day of the month (0 - Sunday, 1 - Monday, ..., 6 - Saturday)
-        const firstDayOfWeek = firstDayOfMonth.getDay();
-
-        // Create headers for the days of the week
-        const daysOfWeek = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
-        daysOfWeek.forEach(day => {
-            const dayElement = document.createElement('div');
-            dayElement.className = 'text-center font-semibold';
-            dayElement.innerText = day;
-            calendarElement.appendChild(dayElement);
-        });
-
-        // Create empty boxes for days before the first day of the month
-        for (let i = 0; i < firstDayOfWeek; i++) {
-            const emptyDayElement = document.createElement('div');
-            calendarElement.appendChild(emptyDayElement);
+        // Jours vides au début
+        for (let i = 0; i < adjustedFirstDay; i++) {
+            calendarEl.innerHTML += `<div class="border-t border-l border-gray-200"></div>`;
         }
 
-        // Create boxes for each day of the month
+        // Jours du mois
+        const today = new Date();
         for (let day = 1; day <= daysInMonth; day++) {
-            const dayElement = document.createElement('div');
-            dayElement.className = 'h-32 text-center py-2 border cursor-pointer hover:bg-primary rounded-md hover:text-white hover:font-bold';
-            dayElement.innerText = day;
+            const isToday = day === today.getDate() && month === today.getMonth() && year === today.getFullYear();
+            const dayEvents = state.events.filter(e => {
+                const eventDate = new Date(e.date ?? (e.timestart * 1000));
+                return eventDate.getDate() === day && eventDate.getMonth() === month && eventDate.getFullYear() === year;
+            });
 
-            const ul = document.createElement('ul');
-            ul.className = 'pl-4 overflow-hidden';
-
-            for (let i = 0; i < eventsElements.length; i++) {
-                const evtDay = eventsElements[i].day;
-                const evtMonth = eventsElements[i].month;
-                const evtYear = eventsElements[i].year;
-
-                if (evtDay === day && evtMonth === month && evtYear === year) {
-                    ul.appendChild(eventsElements[i].element);
-                }
-            }
-
-            dayElement.appendChild(ul);
-
-            // Check if this date is the current date
-            const currentDate = new Date();
-            if (year === currentDate.getFullYear() && month === currentDate.getMonth() && day === currentDate.getDate()) {
-                dayElement.classList.add('bg-primary', 'text-white', 'hover:border', 'hover:border-black');
-            }
-
-            calendarElement.appendChild(dayElement);
+            let dayHtml = `
+                <div class="border-t border-l border-gray-200 p-2 h-full flex flex-col ${isToday ? 'bg-indigo-50' : ''}">
+                    <div class="font-semibold ${isToday ? 'text-indigo-600' : 'text-gray-700'}">${day}</div>
+                    <ul class="mt-1 space-y-1 overflow-y-auto text-xs flex-grow">
+                        ${dayEvents.map(e => `<li class="bg-indigo-100 text-indigo-800 p-1 rounded truncate">${e.title ?? e.name}</li>`).join('')}
+                    </ul>
+                </div>
+            `;
+            calendarEl.innerHTML += dayHtml;
         }
     }
 
-    // Initialize the calendar with the current month and year
-    const currentDate = new Date();
-    let currentYear = currentDate.getFullYear();
-    let currentMonth = currentDate.getMonth();
-
-    fetchEvents().then(() => {
-        generateCalendar(currentYear, currentMonth);
-    });
-
-    // Event listeners for previous and next month buttons
-    document.getElementById('prevMonth').addEventListener('click', () => {
-        currentMonth--;
-        if (currentMonth < 0) {
-            currentMonth = 11;
-            currentYear--;
-        }
-        generateCalendar(currentYear, currentMonth);
-    });
-
-    document.getElementById('nextMonth').addEventListener('click', () => {
-        currentMonth++;
-        if (currentMonth > 11) {
-            currentMonth = 0;
-            currentYear++;
-        }
-        generateCalendar(currentYear, currentMonth);
-    });
-
-    // Function to show the modal with the selected date
-    function showModal(selectedDate) {
-        const modal = document.getElementById('myModal');
-        const modalDateElement = document.getElementById('modalDate');
-        modalDateElement.innerText = selectedDate;
-        modal.classList.remove('hidden');
-    }
-
-    // Function to hide the modal
-    function hideModal() {
-        const modal = document.getElementById('myModal');
-        modal.classList.add('hidden');
-    }
-
-    // Event listener for date click events
-    const dayElements = document.querySelectorAll('.cursor-pointer');
-    dayElements.forEach(dayElement => {
-        dayElement.addEventListener('click', () => {
-            const day = parseInt(dayElement.innerText);
-            const selectedDate = new Date(currentYear, currentMonth, day);
-            const options = { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' };
-            const formattedDate = selectedDate.toLocaleDateString(undefined, options);
-            showModal(formattedDate);
-        });
-    });
-
-    // Event listener for closing the modal
-    document.getElementById('closeModal').addEventListener('click', () => {
-        hideModal();
-    });
-
-    // Courses filter in calender
-    const courseCategory = document.getElementById('course-category');
-
-    courseCategory.addEventListener('change', function () {
-        const selectedCourseId = this.value;
-        const events = document.querySelectorAll(`.event-${selectedCourseId}`);
-
-        if (isNaN(selectedCourseId)) {
-            eventsElements.forEach(event => {
-                event.element.style.display = 'flex';
-            })
+    /**
+     * Gère l'affichage du modal
+     */
+    function toggleModal(show) {
+        if (show) {
+            eventModal.classList.remove('hidden');
+            setTimeout(() => modalContent.classList.remove('opacity-0', '-translate-y-4'), 10);
         } else {
-            eventsElements.forEach(event => {
-                if (event.event && event.event.course_id && event.event.course_id == selectedCourseId) {
-                    event.element.style.display = 'flex';
-                } else {
-                    event.element.style.display = 'none';
-                }
-            })
+            modalContent.classList.add('opacity-0', '-translate-y-4');
+            setTimeout(() => {
+                eventModal.classList.add('hidden');
+                eventForm.reset();
+                toggleEventTypeFields();
+            }, 200);
         }
-    });
-</script>
+    }
 
-<script>
-    const openModal = document.getElementById('openModal');
-    const closeModal = document.getElementById('closeModal');
-    const modal = document.getElementById('modal');
-
-    // Event listeners for opening and closing the modal
-    openModal.addEventListener('click', () => modal.classList.remove('hidden'));
-    closeModal.addEventListener('click', () => modal.classList.add('hidden'));
-
-    // Function to toggle the display of course and category fields
-    function toggleFields() {
-        var type = document.getElementById("type").value;
+    /**
+     * Gère l'affichage des champs conditionnels dans le formulaire du modal
+     */
+    function toggleEventTypeFields() {
+        const type = typeSelect.value;
         document.getElementById("courseField").style.display = (type === "cours") ? "block" : "none";
         document.getElementById("categoryField").style.display = (type === "categorie") ? "block" : "none";
     }
 
-    // Event listener to toggle fields on page load
-    document.addEventListener('DOMContentLoaded', function () {
-        const modal = document.getElementById('modal');
-        const closeModalButton = document.getElementById('closeModal');
-        const form = document.getElementById('eventForm');
+    // ===================================
+    // == Écouteurs d'événements        ==
+    // ===================================
+    prevMonthBtn.addEventListener('click', () => {
+        state.date.setMonth(state.date.getMonth() - 1);
+        renderCalendar();
+    });
 
-        form.addEventListener('submit', function (event) {
-            modal.classList.add('hidden');
-        });
+    nextMonthBtn.addEventListener('click', () => {
+        state.date.setMonth(state.date.getMonth() + 1);
+        renderCalendar();
+    });
 
-        function resetForm() {
-            form.reset();
+    openModalBtn.addEventListener('click', () => toggleModal(true));
+    closeModalBtn.addEventListener('click', () => toggleModal(false));
+    eventModal.addEventListener('click', e => e.target === eventModal && toggleModal(false));
+    typeSelect.addEventListener('change', toggleEventTypeFields);
+
+    eventForm.addEventListener('submit', async function(e) {
+        e.preventDefault();
+        const formData = new FormData(this);
+        try {
+            const response = await fetch('/events', {
+                method: 'POST',
+                body: formData,
+                headers: { 'X-CSRF-TOKEN': formData.get('_token') }
+            });
+            if (!response.ok) throw new Error('Server responded with an error');
+            await response.json();
+            showNotification('Événement créé avec succès !');
+            toggleModal(false);
+            fetchEvents(); // Recharger les événements
+        } catch (error) {
+            console.error('Failed to submit event:', error);
+            showNotification("Erreur lors de la création de l'événement.", 'error');
         }
-
-        closeModalButton.addEventListener('click', function () {
-            modal.classList.add('hidden');
-            resetForm();
-        });
     });
+
+    // ===================================
+    // == Initialisation                ==
+    // ===================================
+    fetchEvents();
+    @if(session('success'))
+        showNotification("{{ session('success') }}");
+    @endif
+});
 </script>
-
-<script>
-    document.getElementById('eventForm').addEventListener('submit', function(event) {
-        event.preventDefault(); // Prevent default form submission
-
-        let formData = new FormData(this);
-
-        fetch('/events', {
-            method: 'POST',
-            body: formData,
-            headers: {
-                'X-CSRF-TOKEN': document.querySelector('input[name="_token"]').value
-            }
-        })
-        .then(response => response.json())
-        .then(data => {
-            console.log('Success:', data);
-            alert('Event created successfully!');
-        })
-        .catch(error => {
-            console.error('Error:', error);
-            alert('An error occurred.');
-        });
-    });
-</script>
-
 @endsection

@@ -21,7 +21,7 @@ class ProfileController extends Controller
     //         'user' => $request->user(),
     //     ]);
     // }
-    
+
     public function edit()
     {
         $user = Auth::user();
@@ -50,7 +50,7 @@ class ProfileController extends Controller
                 // Utilisez Storage pour supprimer l'ancienne image
                 Storage::disk('public')->delete($user->profile_picture);
             }
-    
+
             // Enregistrer la nouvelle photo
             $path = $request->file('profile_picture')->store('profile_pictures', 'public');
             $user->profile_picture = $path;

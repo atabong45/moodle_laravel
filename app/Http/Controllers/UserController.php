@@ -3,8 +3,10 @@
 namespace App\Http\Controllers;
 
 use App\Models\User;
+use Illuminate\Database\Eloquent\Casts\Attribute;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Facades\Storage;
 
 class UserController extends Controller
 {
@@ -88,5 +90,19 @@ class UserController extends Controller
     {
         $user->delete();
         return redirect()->route('users.index')->with('success', 'User deleted successfully.');
+    }
+
+    /**
+     * Get the URL to the user's profile picture.
+     *
+     * @return \Illuminate\Database\Eloquent\Casts\Attribute
+     */
+    public function profilePictureUrl(): Attribute
+    {
+        return Attribute::make(
+            get: fn () => $this->profilePictureUrl()
+                            ? Storage::url($this->profilePictureUrl())
+                            : asset('images/default-profile-picture.png'),
+        );
     }
 }

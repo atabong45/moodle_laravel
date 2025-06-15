@@ -23,7 +23,7 @@ class CourseController extends Controller
 
     public function index(Request $request)
     {
-        $search = $request->get('search'); 
+        $search = $request->get('search');
 
         $courses = Course::when($search, function ($query, $search) {
             return $query->where('fullname', 'like', '%' . $search . '%');
