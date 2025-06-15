@@ -37,10 +37,10 @@ class MoodleCourseService
             'action' => $action,
             'data' => $data
         ];
-        
+
         $logLine = json_encode($logEntry) . PHP_EOL;
         file_put_contents($this->logFilePath, $logLine, FILE_APPEND);
-        
+
         Log::info("Moodle action logged: {$action}");
     }
 
@@ -59,7 +59,7 @@ class MoodleCourseService
             'startdate' => $course->startdate,
             'enddate' => $course->enddate
         ];
-        
+
         $this->logAction('course_create', $courseData);
     }
 
@@ -78,7 +78,7 @@ class MoodleCourseService
             'startdate' => $course->startdate,
             'enddate' => $course->enddate
         ];
-        
+
         $this->logAction('course_update', $courseData);
     }
 
@@ -146,7 +146,7 @@ class MoodleCourseService
             $courseData = json_decode($response->body(), true);
             if (is_array($courseData) && !empty($courseData[0]['id'])) {
                 $courseId = $courseData[0]['id'];
-                
+
                 // Étape 2: Ajouter l'administrateur comme enseignant
                 $enrollParams = array_merge($this->defaultParams, [
                     'wsfunction' => 'enrol_manual_enrol_users',

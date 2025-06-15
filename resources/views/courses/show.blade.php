@@ -4,7 +4,6 @@
 
 @section('content')
 
-{{-- Le x-data est conservé car il ne gère QUE la navigation et n'interfère pas --}}
 <div x-data="coursePage()" x-init="initObserver()" class="bg-gray-50">
     <div class="container mx-auto px-4 sm:px-6 lg:px-8 py-12">
         <div class="grid grid-cols-1 lg:grid-cols-4 gap-x-12">
@@ -23,6 +22,11 @@
                             <i class="fas fa-layer-group w-5 text-center"></i><span class="truncate">{{ $section->name }}</span>
                         </a>
                     @endforeach
+                    @if(Auth::user()->hasRole('ROLE_TEACHER'))
+                        <a href="#add-section" @click="scrollTo('add-section')" :class="activeSection === 'add-section' ? 'bg-green-100 text-green-800' : 'text-gray-600 hover:bg-gray-100'" class="flex items-center gap-3 px-3 py-2 text-sm font-medium rounded-md transition-all">
+                            <i class="fas fa-plus-circle w-5 text-center text-green-500"></i><span>Ajouter Section</span>
+                        </a>
+                    @endif
                 </nav>
             </aside>
 
@@ -31,15 +35,12 @@
             <!-- =================================================== -->
             <main class="lg:col-span-3">
                 <header class="mb-10">
-                    <a href="{{ url()->previous() }}" class="text-sm text-gray-500 hover:text-indigo-600 flex items-center gap-2 mb-4">
-                        <i class="fas fa-arrow-left"></i> Retour
-                    </a>
+                    <a href="{{ url()->previous() }}" class="text-sm text-gray-500 hover:text-indigo-600 flex items-center gap-2 mb-4"><i class="fas fa-arrow-left"></i> Retour</a>
                     <h1 class="text-4xl md:text-5xl font-extrabold text-gray-900 tracking-tight">{{ $course->fullname }}</h1>
                     <p class="mt-2 text-lg text-gray-600">Animé par <span class="font-semibold text-indigo-600">{{ $course->teacher->username ?? 'admin' }}</span></p>
                 </header>
 
                 <section id="details" data-section="details" class="scroll-mt-24 mb-12 bg-white p-8 rounded-2xl shadow-sm border">
-                    {{-- ... Le contenu des détails est le même ... --}}
                     <h2 class="text-2xl font-bold text-gray-800 mb-6">Détails du cours</h2>
                     <dl class="grid grid-cols-1 sm:grid-cols-2 gap-x-8 gap-y-6">
                         <div class="flex flex-col"><dt class="text-sm font-medium text-gray-500">Nom court</dt><dd class="text-lg text-gray-900 font-semibold">{{ $course->shortname }}</dd></div>
@@ -60,28 +61,22 @@
                             <div class="p-6 space-y-6 info-panel-content hidden">
                                 @forelse ($section->modules as $module)
                                     @if ($module->modname == 'resource')
-                                        {{-- Partiel: module-resource --}}
                                         <div class="bg-gray-50 rounded-lg p-5 border-l-4 border-blue-500 flex items-center justify-between gap-4">
-                                            <div class="flex items-center gap-4">
-                                                <i class="fas fa-file-alt text-3xl text-blue-500"></i>
-                                                <div><h3 class="font-semibold text-gray-800">{{ $module->name }}</h3><p class="text-sm text-gray-500">Ressource</p></div>
-                                            </div>
+                                            <div class="flex items-center gap-4"><i class="fas fa-file-alt text-3xl text-blue-500"></i><div><h3 class="font-semibold text-gray-800">{{ $module->name }}</h3><p class="text-sm text-gray-500">Ressource</p></div></div>
                                             <a href="{{ route('module.download', $module->id) }}" target="_blank" class="inline-flex items-center gap-2 px-4 py-2 bg-blue-600 text-white text-sm font-medium rounded-lg hover:bg-blue-700 shadow-sm"><i class="fas fa-download"></i><span>Télécharger</span></a>
                                         </div>
                                     @elseif ($module->modname == 'assign')
-                                        {{-- Partiel: module-assignment --}}
-                                        <div class="bg-yellow-50 rounded-lg p-5 border-l-4 border-yellow-500 space-y-6">
-                                            <header class="flex items-start gap-4"><i class="fas fa-tasks text-3xl text-yellow-600"></i><div><h3 class="text-lg font-bold text-gray-800">{{ $module->name }}</h3><p class="text-sm text-gray-500">Devoir à rendre</p></div></header>
+                                        <div class="bg-amber-50 rounded-lg p-5 border-l-4 border-amber-500 space-y-6">
+                                            <header class="flex items-start gap-4"><i class="fas fa-tasks text-3xl text-amber-600"></i><div><h3 class="text-lg font-bold text-gray-800">{{ $module->name }}</h3><p class="text-sm text-gray-500">Devoir à rendre</p></div></header>
                                             <div class="space-y-4 pl-10">
                                                 @if($module->intro)<div class="prose prose-sm max-w-none text-gray-700">{!! $module->intro !!}</div>@endif
                                                 @if($module->activity)<details class="bg-white p-4 rounded-lg border"><summary class="font-semibold cursor-pointer text-gray-800">Afficher les consignes</summary><div class="prose prose-sm max-w-none text-gray-700 mt-2">{!! $module->activity !!}</div></details>@endif
                                                 @if ($module->pdf_url)<a href="{{ $module->pdf_url }}" target="_blank" class="inline-flex items-center gap-2 text-sm text-red-700 font-medium hover:underline"><i class="fas fa-file-pdf text-red-500"></i><span>{{ $module->pdf_filename ?? 'Consignes en PDF' }}</span></a>@endif
                                             </div>
-                                            <footer class="flex flex-wrap items-center justify-end gap-4 pt-4 border-t border-yellow-200">
+                                            <footer class="flex flex-wrap items-center justify-end gap-4 pt-4 border-t border-amber-200">
                                                 @if(Auth::user()->hasRole('ROLE_TEACHER'))
                                                     <a href="{{ route('assignments.submissions', $module->id) }}" class="inline-flex items-center gap-2 px-4 py-2 bg-green-600 text-white text-sm font-medium rounded-lg hover:bg-green-700 shadow-sm"><i class="fas fa-clipboard-check"></i><span>Corriger</span></a>
                                                 @else
-                                                    {{-- LE BOUTON CORRIGÉ AVEC LA MÉTHODE SIMPLE --}}
                                                     <button onclick="openSubmissionModal('{{ $module->id }}')" class="inline-flex items-center gap-2 px-4 py-2 bg-purple-600 text-white text-sm font-medium rounded-lg hover:bg-purple-700 shadow-sm"><i class="fas fa-paper-plane"></i><span>Faire une soumission</span></button>
                                                 @endif
                                             </footer>
@@ -92,15 +87,42 @@
                                 @endforelse
 
                                 @if(Auth::user()->hasRole('ROLE_TEACHER'))
-                                    {{-- Partiel: module-create-form --}}
-                                    <div class="mt-6 pt-6 border-t border-dashed border-gray-300">
-                                        {{-- ... (Le formulaire pour créer un module peut être ajouté ici si besoin) ... --}}
+                                    <div x-data="{ open: false }" class="mt-6 pt-6 border-t border-dashed border-gray-300">
+                                        <div x-show="!open" class="text-center"><button @click="open = true" type="button" class="inline-flex items-center gap-2 px-4 py-2 bg-gray-100 text-gray-700 font-semibold text-sm rounded-lg hover:bg-gray-200 transition-colors shadow-sm"><i class="fas fa-plus-circle"></i><span>Ajouter un module</span></button></div>
+                                        <div x-show="open" x-collapse style="display: none;">
+                                            <h3 class="text-lg font-bold text-gray-800 mb-4">Nouveau module</h3>
+                                            <form action="{{ route('modules.store') }}" method="POST" enctype="multipart/form-data" class="space-y-4">
+                                                @csrf
+                                                <input type="hidden" name="section_id" value="{{ $section->id }}"><input type="hidden" name="downloadcontent" value="1"><input type="hidden" name="modplural" id="modplural-{{ $section->id }}" value="Files">
+                                                <div><label for="name-{{ $section->id }}" class="block text-sm font-medium text-gray-700">Nom du Module</label><input type="text" name="name" id="name-{{ $section->id }}" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500" required></div>
+                                                <div><label for="modname-{{ $section->id }}" class="block text-sm font-medium text-gray-700">Type</label><select name="modname" id="modname-{{ $section->id }}" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500" required onchange="updateModplural('{{ $section->id }}')"><option value="resource">Ressource</option><option value="assign">Devoir</option></select></div>
+                                                <div><label for="file_path-{{ $section->id }}" class="block text-sm font-medium text-gray-700">Fichier (Optionnel)</label><input type="file" name="file_path" id="file_path-{{ $section->id }}" class="mt-1 block w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-indigo-50 file:text-indigo-700 hover:file:bg-indigo-100"></div>
+                                                <div class="flex items-center justify-end space-x-3 pt-2"><button type="button" @click="open = false" class="px-4 py-2 bg-gray-200 text-gray-800 text-sm font-semibold rounded-lg hover:bg-gray-300">Annuler</button><button type="submit" class="px-4 py-2 bg-indigo-600 text-white text-sm font-semibold rounded-lg hover:bg-indigo-700 shadow-sm">Créer Module</button></div>
+                                            </form>
+                                        </div>
                                     </div>
                                 @endif
                             </div>
                         </section>
                     @endforeach
                 </div>
+
+                @if(Auth::user()->hasRole('ROLE_TEACHER'))
+                    <section id="add-section" data-section="add-section" class="scroll-mt-24 mt-10 bg-white p-8 rounded-2xl shadow-sm border" x-data="{ open: false }">
+                        <div @click="open = !open" class="flex items-center justify-between cursor-pointer">
+                            <h2 class="text-2xl font-bold text-gray-800">Ajouter une nouvelle section</h2>
+                            <i class="fas fa-chevron-down text-gray-500 transition-transform duration-300" :class="{ '-rotate-180': open }"></i>
+                        </div>
+                        <div x-show="open" x-collapse class="mt-6">
+                            <form action="{{ route('sections.store', ['course' => $course->id]) }}" method="POST">
+                                @csrf
+                                <input type="hidden" name="course_id" value="{{ $course->id }}">
+                                <div class="mb-4"><label for="section-name" class="block text-sm font-medium text-gray-700 mb-1">Nom de la section</label><input type="text" name="name" id="section-name" class="mt-1 block w-full rounded-lg border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500" required></div>
+                                <div class="flex justify-end"><button type="submit" class="inline-flex items-center px-6 py-2 bg-indigo-600 text-white font-semibold rounded-lg hover:bg-indigo-700 transition">Créer la Section</button></div>
+                            </form>
+                        </div>
+                    </section>
+                @endif
             </main>
         </div>
     </div>
@@ -111,16 +133,40 @@
 <!-- =================================================== -->
 <div id="submissionModal" class="fixed inset-0 bg-black bg-opacity-60 backdrop-blur-sm flex items-center justify-center hidden z-50 p-4">
     <div class="bg-white rounded-2xl shadow-2xl p-8 w-full max-w-2xl">
-        <div class="flex justify-between items-center mb-6"><h3 class="text-2xl font-bold text-gray-800">Soumettre votre travail</h3><button onclick="closeSubmissionModal()" class="text-gray-400 hover:text-gray-700"><i class="fas fa-times fa-lg"></i></button></div>
-        <form id="submissionForm">
-            <input type="hidden" id="moduleId" name="module_id" value="">
-            <div class="mb-5"><label for="responseText" class="block font-semibold text-gray-700 mb-2">Votre réponse</label><textarea id="responseText" name="response" rows="5" class="w-full border-gray-300 rounded-lg p-3 focus:ring-2 focus:ring-indigo-500" placeholder="Écrivez votre réponse ici..."></textarea></div>
-            <div class="mb-8"><label class="block font-semibold text-gray-700 mb-2">Joindre un fichier</label><div class="relative flex items-center justify-center w-full h-32 border-2 border-dashed rounded-lg bg-gray-50"><input type="file" name="submission_file" id="submissionFile" class="absolute inset-0 w-full h-full opacity-0 cursor-pointer"><div class="text-center pointer-events-none"><i class="fas fa-cloud-upload-alt text-3xl text-gray-400"></i><p class="mt-2 text-sm text-gray-600"><span class="font-semibold text-indigo-600">Cliquez pour téléverser</span></p><p id="fileName" class="text-xs text-gray-500">Aucun fichier sélectionné</p></div></div></div>
-            <div class="flex justify-end space-x-4"><button type="button" onclick="closeSubmissionModal()" class="px-6 py-2 bg-gray-200 text-gray-800 font-semibold rounded-lg hover:bg-gray-300">Annuler</button><button type="button" onclick="submitAssignment()" class="px-6 py-2 bg-purple-600 text-white font-semibold rounded-lg hover:bg-purple-700 shadow-sm">Valider</button></div>
+        <div class="flex justify-between items-center mb-6">
+            <h3 class="text-2xl font-bold text-gray-800">Soumettre votre travail</h3>
+            <button onclick="closeSubmissionModal()" class="text-gray-400 hover:text-gray-700"><i class="fas fa-times fa-lg"></i></button>
+        </div>
+
+        {{-- LE FORMULAIRE CORRIGÉ --}}
+        <form id="submissionForm" method="POST" action="" enctype="multipart/form-data">
+            @csrf
+            <div class="mb-5">
+                <label for="responseText" class="block font-semibold text-gray-700 mb-2">Votre réponse (texte)</label>
+                <textarea id="responseText" name="content" rows="5" class="w-full border-gray-300 rounded-lg p-3 focus:ring-2 focus:ring-indigo-500" placeholder="Écrivez votre réponse ici..."></textarea>
+            </div>
+            <div class="mb-8">
+                <label class="block font-semibold text-gray-700 mb-2">Joindre un fichier</label>
+                <div class="relative flex items-center justify-center w-full h-32 border-2 border-dashed rounded-lg bg-gray-50">
+                    <input type="file" name="file" id="submissionFile" class="absolute inset-0 w-full h-full opacity-0 cursor-pointer">
+                    <div class="text-center pointer-events-none">
+                        <i class="fas fa-cloud-upload-alt text-3xl text-gray-400"></i>
+                        <p class="mt-2 text-sm text-gray-600"><span class="font-semibold text-indigo-600">Cliquez pour téléverser</span></p>
+                        <p id="fileName" class="text-xs text-gray-500">Aucun fichier sélectionné</p>
+                    </div>
+                </div>
+            </div>
+            <div class="flex justify-end space-x-4">
+                <button type="button" onclick="closeSubmissionModal()" class="px-6 py-2 bg-gray-200 text-gray-800 font-semibold rounded-lg hover:bg-gray-300">Annuler</button>
+                <button type="button" onclick="submitAssignment()" class="px-6 py-2 bg-purple-600 text-white font-semibold rounded-lg hover:bg-purple-700 shadow-sm">Valider la soumission</button>
+            </div>
         </form>
     </div>
 </div>
 
+@endsection
+
+@push('scripts')
 <script>
 // ===============================================
 // == LOGIQUE ALPINE.JS POUR LA NAVIGATION STICKY ==
@@ -144,21 +190,18 @@ function coursePage() {
 }
 
 // ============================================================
-// == LOGIQUE JAVASCRIPT SIMPLE POUR LES ACCORDÉONS ET LE MODAL ==
-// == (Comme dans votre version qui fonctionnait)             ==
+// == LOGIQUE JAVASCRIPT POUR LES ACCORDÉONS ET LE MODAL     ==
 // ============================================================
 document.addEventListener('DOMContentLoaded', function() {
-    // Gestion des accordéons (sections du cours)
     document.querySelectorAll('.info-panel-toggle').forEach(function(toggle) {
         toggle.addEventListener('click', function() {
             const content = this.closest('.info-panel-container').querySelector('.info-panel-content');
             const icon = this.querySelector('.info-panel-icon');
             content.classList.toggle('hidden');
-            icon.classList.toggle('-rotate-180'); // Utilise la rotation de Tailwind
+            icon.classList.toggle('-rotate-180');
         });
     });
 
-    // Afficher le nom du fichier sélectionné dans le modal
     const submissionFileInput = document.getElementById('submissionFile');
     if (submissionFileInput) {
         submissionFileInput.addEventListener('change', function(e) {
@@ -168,42 +211,35 @@ document.addEventListener('DOMContentLoaded', function() {
     }
 });
 
+function updateModplural(sectionId) {
+    const modname = document.getElementById(`modname-${sectionId}`).value;
+    const modplural = document.getElementById(`modplural-${sectionId}`);
+    modplural.value = (modname === 'resource') ? 'Files' : 'Assignments';
+}
+
 // Fonctions globales pour le modal
 function openSubmissionModal(moduleId) {
-    document.getElementById('moduleId').value = moduleId;
+    const form = document.getElementById('submissionForm');
+    // Mettre à jour dynamiquement l'URL d'action du formulaire
+    form.action = `/submissions/${moduleId}`; // Assurez-vous que cette route existe
+
     document.getElementById('submissionModal').classList.remove('hidden');
-    document.body.classList.add('overflow-hidden'); // Empêche le défilement de l'arrière-plan
+    document.body.classList.add('overflow-hidden');
 }
 
 function closeSubmissionModal() {
     const modal = document.getElementById('submissionModal');
     modal.classList.add('hidden');
     document.body.classList.remove('overflow-hidden');
-
-    // Réinitialiser le formulaire pour la prochaine fois
     document.getElementById('submissionForm').reset();
     document.getElementById('fileName').textContent = 'Aucun fichier sélectionné';
 }
 
 function submitAssignment() {
-    // Ici, vous ajouteriez la logique de soumission AJAX avec fetch()
-    console.log("Soumission du devoir pour le module ID: " + document.getElementById('moduleId').value);
-
-    // Fermer le modal après la tentative de soumission
-    closeSubmissionModal();
-
-    // Afficher une notification (vous pouvez améliorer ce système)
-    const notification = document.createElement('div');
-    notification.className = 'fixed top-5 right-5 bg-green-500 text-white px-5 py-3 rounded-lg shadow-xl animate-fade-in-down';
-    notification.innerHTML = `<i class="fas fa-check-circle mr-2"></i> Votre travail a bien été soumis !`;
-    document.body.appendChild(notification);
-
-    setTimeout(() => {
-        notification.style.transition = 'opacity 0.5s ease';
-        notification.style.opacity = '0';
-        setTimeout(() => notification.remove(), 500);
-    }, 3000);
+    // La fonction la plus simple : on déclenche la soumission native du formulaire.
+    // Le backend Laravel prendra le relais pour la validation et la redirection.
+    const form = document.getElementById('submissionForm');
+    form.submit();
 }
 </script>
-
-@endsection
+@endpush
