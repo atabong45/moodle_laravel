@@ -27,7 +27,7 @@ class SynchronisationController extends Controller
     protected $moodleModuleService;
     protected $logFilePath;
     protected $moodleAssignmentService;
-    
+
 
     public function __construct(
         MoodleCourseService $moodleCourseService,
@@ -35,7 +35,7 @@ class SynchronisationController extends Controller
         MoodleCategoryService $moodleCategoryService,
         MoodleSectionService $moodleSectionService,
         MoodleModuleService $moodleModuleService,
-        MoodleAssignmentService $moodleAssignmentService 
+        MoodleAssignmentService $moodleAssignmentService
     ) {
         $this->moodleCourseService = $moodleCourseService;
         $this->moodleUserService = $moodleUserService;
@@ -54,7 +54,7 @@ class SynchronisationController extends Controller
 
             // Exécuter les actions à partir du fichier de log
             $this->processLoggedActions();
-        
+
             // Synchronisation des catégories
             $moodleCategories = $this->moodleCategoryService->getToutesCategories();
             $moodleCategoryIds = array_column($moodleCategories, 'id');
@@ -235,7 +235,7 @@ class SynchronisationController extends Controller
                         // 1. Récupération des IDs locaux (une seule fois)
                         $sectionId = Section::where('moodle_id', $section['id'])->value('id');
                         $courseId = Course::where('moodle_id', $moodleCourse['id'])->value('id');
-                        
+
                         // 2. Préparation des données de base du module
                         $moduleData = [
                             'name' => $module['name'],
@@ -244,15 +244,15 @@ class SynchronisationController extends Controller
                             'downloadcontent' => $module['downloadcontent'] ?? '',
                             'section_id' => $sectionId,
                             'course_id' => $courseId,
-                            'file_path' => isset($module['contents'][0]['fileurl']) 
-                                ? str_replace('?forcedownload=1', '?token='.config('moodle.api_token'), $module['contents'][0]['fileurl']) 
+                            'file_path' => isset($module['contents'][0]['fileurl'])
+                                ? str_replace('?forcedownload=1', '?token='.config('moodle.api_token'), $module['contents'][0]['fileurl'])
                                 : '',
                         ];
 
                         // 3. Traitement spécifique pour les assignments
                         if ($module['modname'] === 'assign') {
                             $assignmentDetails = $this->moodleAssignmentService->getAssignmentDetails(
-                                $module['id'], 
+                                $module['id'],
                                 $moodleCourse['id']
                             );
 
@@ -270,7 +270,7 @@ class SynchronisationController extends Controller
                                     'allowsubmissionsfromdate' => Carbon::createFromTimestamp($assignmentDetails['allowsubmissionsfromdate']),
                                     'gradingduedate' => Carbon::createFromTimestamp($assignmentDetails['gradingduedate']),
                                     'pdf_filename' => $assignmentDetails['pdf_file']['filename'] ?? null,
-                                    'pdf_url' => isset($assignmentDetails['pdf_file']['fileurl']) 
+                                    'pdf_url' => isset($assignmentDetails['pdf_file']['fileurl'])
                                         ? $assignmentDetails['pdf_file']['fileurl'] . '?token=' . config('moodle.api_token')
                                         : null,
                                 ]);
@@ -306,7 +306,7 @@ class SynchronisationController extends Controller
                         } catch (\Exception $e) {
                             Log::error("Erreur lors de la synchronisation des assignments pour le cours {$moodleCourse['id']}: " . $e->getMessage());
                             // Continue avec les autres cours même si celui-ci échoue
-                        }   
+                        }
                     }
                 }
             }
@@ -316,13 +316,13 @@ class SynchronisationController extends Controller
 
 
             return redirect()->back()->with('success', 'Synchronisation terminée !');
-        } 
+        }
         catch (\Exception $e) {
             Log::error('Erreur de synchronisation : ' . $e->getMessage());
             return redirect()->back()->with('error', 'Erreur de synchronisation : ' . $e->getMessage());
         }
     }
-    
+
     /**
      * Process actions logged in the file
      */
@@ -337,19 +337,19 @@ class SynchronisationController extends Controller
         $file = fopen($this->logFilePath, 'r');
         $tempFilePath = $this->logFilePath . '.temp';
         $tempFile = fopen($tempFilePath, 'w');
-        
+
         $successfulActions = [];
-        
+
         while (($line = fgets($file)) !== false) {
             $entry = json_decode($line, true);
-            
+
             if (!$entry) {
                 continue;
             }
-            
+
             $success = $this->executeAction($entry['action'], $entry['data']);
             Log::info('Action a traitée : ' . $entry['action'] . ' donnee ' . json_encode($entry['data']));
-            
+
             if ($success) {
                 $successfulActions[] = $entry;
                 Log::info('success');
@@ -359,13 +359,13 @@ class SynchronisationController extends Controller
                 Log::info('echec');
             }
         }
-        
+
         fclose($file);
         fclose($tempFile);
-        
+
         // Remplacer l'ancien fichier par le nouveau
         rename($tempFilePath, $this->logFilePath);
-        
+
         Log::info('Actions traitées : ' . count($successfulActions) . ' réussies');
     }
 
@@ -388,7 +388,7 @@ class SynchronisationController extends Controller
                     Log::info(' creation du cour avec les donnees data ' . json_encode($data));
 
                     return $this->moodleCourseService->createCourse($course);
-                    
+
                 case 'course_update':
                     $courseData = [
                         'fullname' => $data['fullname'],
@@ -398,30 +398,30 @@ class SynchronisationController extends Controller
                         'startdate' => strtotime($data['startdate']),
                         'enddate' => $data['enddate'] ? strtotime($data['enddate']) : null,
                     ];
-                    
+
                     $this->moodleCourseService->updateCourse($data['id'], $courseData);
                     return true;
-                    
+
                 case 'course_delete':
                     $this->moodleCourseService->deleteCourse($data['id']);
                     return true;
-                
-                
+
+
                     // Gestion des sections
 case 'section_create':
     $section = new Section();
     $section->name = $data['name'];
     $section->course_id = $data['course_id'];
     $moodle_id = Course::where('id', $data['course_id'])->value('moodle_id');
-    
+
     // Récupérer le nombre de sections existantes pour déterminer le numéro
     $sectionNumber = 1;
-    
+
     $sectionData = [
         'summary' => $data['summary'] ?? '',
         'visible' => $data['visible'] ?? 1
     ];
-    
+
     $result =$this->moodleSectionService->creerSection(
         $moodle_id ,
         $data['name'],
@@ -429,22 +429,22 @@ case 'section_create':
         $sectionData
     ) !== null;
         Log::debug("Résultat de création de section: " . json_encode($result));
-    
+
     return !empty($result);
-    
+
 case 'section_update':
     $sectionData = [
         'name' => $data['name'],
         'visible' => $data['visible'] ?? 1,
         'summary' => $data['summary'] ?? ''
     ];
-    
+
     return $this->moodleSectionService->modifierSection(
         $data['course_id'],
         $data['id'],
         $sectionData
     ) !== null;
-    
+
 case 'section_delete':
     return $this->moodleSectionService->supprimerSection(
         $data['id']
@@ -454,9 +454,9 @@ case 'section_delete':
                     $data['id'],
                     false
                 ) !== null;
-                
-            
-            
+
+
+
             // Gestion des modules
             case 'module_create':
                 //$moodleId = Section::find($data['section_id'])?->course?->moodle_id;
@@ -489,14 +489,14 @@ case 'section_delete':
                     'modplural' => $data['modplural'] ?? ($data['modname'] . 's'), // Fallback si manquant
                     'downloadcontent' => 1,
                 ];
-                
+
                 return $this->moodleModuleService->creerModule(
                     $moodleId,
                     $data['modname'],
                     $data['name'],
                     $moduleData
                 ) !== null;
-                
+
             case 'module_update':
                 $moduleData = [
                     'name' => $data['name'],
@@ -504,28 +504,28 @@ case 'section_delete':
                     'modplural' => $data['modplural'] ?? $data['modname'] . 's',
                     'downloadcontent' => $data['downloadcontent'] ?? 0,
                 ];
-                
+
                 // Pour les ressources, mettre à jour le fichier si nécessaire
                 if ($data['modname'] === 'resource' && isset($data['file_path'])) {
                     $moduleData['files'] = $data['file_path'];
                 }
-                
+
             //     return $this->moodleModuleService->modifierModule(
             //         $data['course_id'],
             //         $data['id'],
             //         $moduleData
             //     ) !== null;
-                
+
             // case 'module_delete':
             //     return $this->moodleModuleService->supprimerModule(
             //         $data['course_id'],
             //         $data['id']
             //     ) !== null;
-                
+
             default:
                 Log::warning("Action inconnue : {$action}");
                 return false;
-        }  
+        }
 
         } catch (\Exception $e) {
             Log::error("Erreur lors de l'exécution de l'action {$action} : " . $e->getMessage());
@@ -533,7 +533,7 @@ case 'section_delete':
         }
     }
 
-    protected function checkServerAvailability() {        
+    protected function checkServerAvailability() {
         // Vérifier la disponibilité du serveur Moodle
         if (!$this->moodleCourseService->isServerAvailable()) {
             return redirect()->back()->with('alert', 'Le serveur Moodle n\'est pas disponible.');
