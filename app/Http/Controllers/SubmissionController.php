@@ -9,6 +9,7 @@ use App\Services\MoodleSubmissionService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\Storage;
 
 class SubmissionController extends Controller
 {
@@ -28,7 +29,7 @@ class SubmissionController extends Controller
      */
     public function index(Module $module)
     {
-        $assignment = $module->assignment;
+        $assignment = $module->assignments->first();
 
         if (!$assignment) {
             return redirect()->back()->with('error', 'Aucun devoir trouvé pour ce module.');
@@ -41,6 +42,31 @@ class SubmissionController extends Controller
     }
 
     /**
+     * AFFICHE UNE SOUMISSION DÉTAILLÉE.
+     * C'est la nouvelle méthode que vous avez demandée.
+     *
+     * @param Submission $submission
+     * @return \Illuminate\View\View
+     */
+    public function show(Submission $submission)
+    {
+        // On charge les relations pour éviter les requêtes N+1
+        $submission->load('user', 'grade');
+
+        return view('submissions.show', compact('submission'));
+    }
+
+    public function download(Submission $submission)
+    {
+        // dd($submission);
+        if (!$submission->file_path || !Storage::disk('local')->exists($submission->file_path)) {
+            abort(404, 'Fichier non trouvé.');
+        }
+
+        return Storage::disk('local')->download($submission->file_path);
+    }
+
+    /**
      * Enregistre une nouvelle soumission dans la base de données locale
      * et la journalise pour une synchronisation future.
      *
@@ -50,18 +76,12 @@ class SubmissionController extends Controller
      */
     public function store(Request $request, Module $module)
     {
-        dd($module);
-        $assignment = $module->assignment;
-
-        dd($assignment);
-        dd(2);
+        $assignment = $module->assignments->first();
 
         $request->validate([
             'content' => 'sometimes|nullable|string|max:65535',
             'file' => 'sometimes|nullable|file|mimes:pdf,txt,zip,doc,docx|max:5120', // 5MB
         ]);
-
-        dd(3);
 
         if (empty($request->input('content')) && !$request->hasFile('file')) {
             return redirect()->back()->withErrors(['content' => 'Vous devez fournir au moins un texte ou un fichier.']);
@@ -83,12 +103,10 @@ class SubmissionController extends Controller
             'submitted_at' => now()
         ]);
 
-        dd($submission);
-
         // 2. Journaliser l'action pour une synchronisation ultérieure
         //    (On suppose que votre service a une méthode pour cela)
         try {
-            $this->submissionService->logSubmissionCreation($submission);
+            //$this->submissionService->logSubmissionCreation($submission);
         } catch (\Exception $e) {
             Log::error("Échec de la journalisation de la soumission #{$submission->id}: " . $e->getMessage());
             // Même si la journalisation échoue, la soumission est sauvée pour l'utilisateur.

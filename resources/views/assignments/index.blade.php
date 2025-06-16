@@ -8,12 +8,12 @@
             <div class="p-6 border-b border-gray-200">
                 <div class="flex justify-center space-x-6">
                     <a href="{{ route('assignments.index', ['view' => 'assignments']) }}"
-                       class="text-lg font-medium px-4 py-2 rounded-lg hover:bg-gray-100 transition 
+                       class="text-lg font-medium px-4 py-2 rounded-lg hover:bg-gray-100 transition
                               {{ request('view') === 'assignments' ? 'text-blue-600 border-b-2 border-blue-600' : 'text-gray-600' }}">
                         <i class="fas fa-file-alt mr-2"></i> Énoncés
                     </a>
                     <a href="{{ route('assignments.index', ['view' => 'submissions']) }}"
-                       class="text-lg font-medium px-4 py-2 rounded-lg hover:bg-gray-100 transition 
+                       class="text-lg font-medium px-4 py-2 rounded-lg hover:bg-gray-100 transition
                               {{ request('view') === 'submissions' ? 'text-blue-600 border-b-2 border-blue-600' : 'text-gray-600' }}">
                         <i class="fas fa-paper-plane mr-2"></i> Soumissions
                     </a>
@@ -22,7 +22,7 @@
 
             <!-- Bouton Retour -->
             <div class="p-6">
-                    <a href="{{ url()->previous() }}" 
+                    <a href="{{ url()->previous() }}"
                     class="text-blue-500 hover:text-blue-700 font-medium mb-4 inline-block">
                         <i class="fas fa-arrow-left mr-1"></i> Retour
                     </a>
@@ -50,7 +50,7 @@
                                 @foreach ($submissions as $submission)
                                     <tr class="hover:bg-gray-50">
                                         <td class="px-6 py-4 text-sm text-gray-800">{{ $submission->id }}</td>
-                                        <td class="px-6 py-4 text-sm text-gray-800">{{ $submission->student->name }}</td>
+                                        <td class="px-6 py-4 text-sm text-gray-800">{{ $submission->user->name }}</td>
                                         <td class="px-6 py-4 text-sm text-gray-800">{{ $submission->assignment->name }}</td>
                                         <td class="px-6 py-4 text-sm">
                                             <span class="px-2 py-1 text-xs font-medium rounded-lg
@@ -60,7 +60,7 @@
                                         </td>
                                         <td class="px-6 py-4 text-sm text-gray-800">{{ $submission->grade->grade ?? 'Non corrigée' }}</td>
                                         <td class="px-6 py-4 text-sm text-gray-800">
-                                            <a href="{{ route('submissions.show', $submission->id) }}" 
+                                            <a href="{{ route('submissions.show', $submission->id) }}"
                                                class="text-blue-500 hover:text-blue-700 font-medium">
                                                 <i class="fas fa-eye mr-1"></i> Voir
                                             </a>
@@ -74,7 +74,7 @@
                     @if(auth()->user()->hasRole('ROLE_TEACHER'))
                         <div class="flex justify-between items-center mb-6">
                             <h3 class="text-xl font-bold text-gray-800">Liste des Énoncés</h3>
-                            <a href="{{ route('assignments.create') }}" 
+                            <a href="{{ route('assignments.create') }}"
                             class="bg-blue-500 text-white px-4 py-2 rounded-lg hover:bg-blue-600 transition">
                                 <i class="fas fa-plus mr-1"></i> Nouvel Énoncé
                             </a>
@@ -101,7 +101,7 @@
                                         <td class="px-6 py-4 text-sm text-gray-800">{{ $assignment->module->name }}</td>
                                         <td class="px-6 py-4 text-sm text-gray-800">{{ \Carbon\Carbon::parse($assignment->duedate)->format('d/m/Y') }}</td>
                                         <td class="px-6 py-4 text-sm text-gray-800">
-                                            <a href="{{ route('assignments.show', $assignment->id) }}" 
+                                            <a href="{{ route('assignments.show', $assignment->id) }}"
                                                class="text-blue-500 hover:text-blue-700 font-medium">
                                                 <i class="fas fa-eye mr-1"></i> Voir
                                             </a>

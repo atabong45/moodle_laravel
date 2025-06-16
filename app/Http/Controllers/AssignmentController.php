@@ -2,14 +2,24 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\Assignment;
 use App\Models\Module;
-use App\Models\AssignmentFile;
 use App\Models\Grade;
+use App\Models\Submission;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 
 class AssignmentController extends Controller
 {
+    public function index()
+    {
+        $assignments = Assignment::all();
+        $modules = Module::all();
+        $submissions = Submission::all();
+
+        return view('assignments.index', compact('assignments', 'modules', 'submissions'));
+    }
+
     public function show(Module $module)
     {
         return view('assignments.show', compact('module'));
@@ -45,12 +55,17 @@ class AssignmentController extends Controller
         return redirect()->route('assignments.show', $module)
             ->with('success', 'Épreuve composée avec succès.');
     }
-        public function submissions($moduleId)
+    public function submissions($moduleId)
     {
         // Just find the module and display the submissions page
         $module = Module::findOrFail($moduleId);
-        
+
+        $assignments = Assignment::where('module_id', $moduleId)->get();
+
+        // Get the submissions for the module
+        $submissions = $module->submissions;
+
         // Return the view with the module data
-        return view('assignment-submissions', compact('module'));
+        return view('assignments.index', compact('module', 'submissions', 'assignments'));
     }
 }

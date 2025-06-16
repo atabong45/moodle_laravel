@@ -7,16 +7,14 @@ use App\Http\Controllers\AssignmentController;
 use App\Http\Controllers\CategoryController;
 use App\Http\Controllers\ContactController;
 use App\Http\Controllers\CourseController;
-use App\Http\Controllers\DashboardController; // Supposant que vous en ayez un
+use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\EventController;
-use App\Http\Controllers\GradeController;
 use App\Http\Controllers\ModuleController;
 use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\QuestionController;
 use App\Http\Controllers\SectionController;
 use App\Http\Controllers\SubmissionController;
 use App\Http\Controllers\SynchronisationController;
-use App\Http\Controllers\UserController;
 use App\Http\Controllers\WelcomeController;
 
 /*
@@ -74,7 +72,9 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::put('assignments/{assignment}/questions/update', [AssignmentController::class, 'updateQuestions'])->name('assignments.questions.update');
 
     // --- Soumissions (Submissions) ---
+    Route::get('/submissions/{submission}/download', [SubmissionController::class, 'download'])->name('submissions.download');
     Route::post('/submissions/{module}', [SubmissionController::class, 'store'])->name('submissions.store');
+    Route::get('/submissions/{submission}', [SubmissionController::class, 'show'])->name('submissions.show');
     Route::get('/submissions/{module}', [SubmissionController::class, 'index'])->name('submissions.index'); // Ajout pour la vue des soumissions
     Route::post('/submissions/{submission}/grade', [SubmissionController::class, 'grade'])->name('submissions.grade');
 

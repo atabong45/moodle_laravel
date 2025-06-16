@@ -1,82 +1,97 @@
 @extends('layouts.app')
 
+@section('title', 'Soumission de ' . $submission->user->name)
+
 @section('content')
-<div class="py-12 bg-gray-100">
-    <div class="max-w-7xl mx-auto sm:px-6 lg:px-8">
-        <div class="bg-white shadow-lg rounded-lg">
-            <!-- Informations générales de la soumission -->
-            <div class="p-6 border-b border-gray-200">
-                <h2 class="text-2xl font-bold text-gray-800">Soumission de {{ $submission->student->name }}</h2>
-                <p class="text-sm text-gray-600">Évaluation : {{ $submission->assignment->name }}</p>
-                <p class="text-sm text-gray-600">
-                    Statut :
-                    <span class="px-2 py-1 rounded text-white {{ $submission->status == 'pending' ? 'bg-yellow-500' : 'bg-green-500' }}">
-                        {{ $submission->status == 'pending' ? 'En attente de correction' : 'Corrigée' }}
-                    </span>
-                </p>
-                @if($submission->status == 'corrected' && $submission->grade)
-                    <p class="text-sm text-gray-800 font-semibold">Note : {{ $submission->grade->grade }}/20</p>
-                    <p class="text-sm text-gray-600">Commentaire : {{ $submission->grade->comment }}</p>
-                @endif
-            </div>
+<div class="grid grid-cols-1 lg:grid-cols-3 gap-8 items-start">
 
-            <!-- Liste des questions et réponses -->
-            <div class="p-6">
-                <h3 class="text-lg font-bold text-gray-800 mb-4">Réponses de l'étudiant</h3>
-                @if($submissionQuestions->isNotEmpty())
-                    <ul class="divide-y divide-gray-200">
-                        @foreach($submissionQuestions as $question)
-                            <li class="py-4">
-                                <div>
-                                    <p class="text-gray-800 font-semibold">{{ $loop->iteration }}. {{ $question->content }}</p>
-                                    <p class="mt-2 text-gray-600">
-                                        Réponse fournie :
-                                        <span class="font-bold {{ $question->student_answer_id == $question->correct_choice_id ? 'text-green-600' : 'text-red-600' }}">
-                                            {{ $question->choices[$question->student_answer_id] ?? 'Non répondu' }}
-                                        </span>
-                                    </p>
-                                    
-                                    <!-- Dropdown pour voir les choix -->
-                                    <details class="mt-2">
-                                        <summary class="text-blue-500 hover:underline cursor-pointer">Voir les choix</summary>
-                                        <ul class="mt-2 space-y-1 bg-gray-100 p-2 rounded-lg">
-                                            @foreach($question->choices as $key => $choice)
-                                                <li class="{{ $key == $question->correct_choice_id ? 'text-green-600 font-bold' : 'text-gray-700' }}">
-                                                    {{ chr(65 + $key) }}. {{ $choice }}
-                                                </li>
-                                            @endforeach
-                                        </ul>
-                                    </details>
-                                </div>
-                            </li>
-                        @endforeach
-                    </ul>
-                @else
-                    <p class="text-gray-600">Aucune question disponible pour cette soumission.</p>
-                @endif
-            </div>
+    <!-- Colonne Principale : Contenu de la soumission -->
+    <div class="lg:col-span-2 space-y-8">
+        <header>
+            <a href="{{ route('assignments.submissions', $submission->assignment->module->id) }}" class="text-sm text-gray-500 hover:text-indigo-600 flex items-center gap-2 mb-4">
+                <i class="fas fa-arrow-left"></i>
+                Retour à toutes les soumissions
+            </a>
+            <h1 class="text-3xl md:text-4xl font-extrabold text-gray-900 tracking-tight">
+                Soumission de <span class="text-indigo-600">{{ $submission->user->name }}</span>
+            </h1>
+            <p class="mt-2 text-lg text-gray-600">
+                Pour le devoir : <span class="font-semibold">{{ $submission->assignment->module->name }}</span>
+            </p>
+        </header>
 
-            <!-- Formulaire de notation pour les enseignants -->
-            @if(Auth::user()->hasRole('ROLE_TEACHER') && $submission->status == 'pending')
-                <div class="p-6 border-t border-gray-200">
-                    <h4 class="text-lg font-bold text-gray-800 mb-4">Attribuer une note</h4>
-                    <form action="{{ route('submissions.grade', $submission->id) }}" method="POST">
-                        @csrf
-                        <div class="mb-3">
-                            <label for="grade" class="block text-sm font-medium text-gray-700">Note (/20)</label>
-                            <input type="number" class="form-input mt-1 block w-full" name="grade" id="grade" min="0" max="20" required>
-                        </div>
-                        <div class="mb-3">
-                            <label for="comment" class="block text-sm font-medium text-gray-700">Commentaire</label>
-                            <textarea class="form-textarea mt-1 block w-full" name="comment" id="comment"></textarea>
-                        </div>
-                        <button type="submit" class="bg-blue-500 text-white px-4 py-2 rounded-lg hover:bg-blue-700">
-                            Soumettre la note
-                        </button>
-                    </form>
-                </div>
-            @endif
+        <!-- Fichier Soumis -->
+        @if ($submission->file_path)
+        <div class="bg-white p-6 rounded-2xl shadow-lg border border-gray-200">
+            <h2 class="text-xl font-bold text-gray-800 mb-4">Fichier joint</h2>
+            <div class="flex items-center justify-between gap-4 bg-gray-50 p-4 rounded-lg">
+                <a href="{{ route('submissions.download', $submission) }}" class="inline-flex items-center gap-2 px-5 py-2.5 bg-indigo-600 text-white text-sm font-semibold rounded-lg hover:bg-indigo-700 transition-colors shadow-md">
+                    <i class="fas fa-download"></i>
+                    <span>Télécharger</span>
+                </a>
+            </div>
         </div>
+        @endif
+
+        <!-- Réponse Texte -->
+        @if ($submission->content)
+        <div class="bg-white p-6 rounded-2xl shadow-lg border border-gray-200">
+            <h2 class="text-xl font-bold text-gray-800 mb-4">Réponse Texte</h2>
+            <div class="prose prose-lg max-w-none text-gray-700 p-4 bg-gray-50 rounded-lg">
+                {!! nl2br(e($submission->content)) !!}
+            </div>
+        </div>
+        @else
+        <div class="bg-white p-6 rounded-2xl shadow-lg border border-gray-200">
+             <p class="text-gray-500 italic">Aucune réponse texte n'a été fournie.</p>
+        </div>
+        @endif
     </div>
+
+    <!-- Colonne Latérale : Notation et Infos -->
+    <aside class="lg:col-span-1 space-y-6 sticky top-8">
+        <!-- Formulaire de Notation pour l'enseignant -->
+        @can('grade', $submission)
+        <div class="bg-white p-6 rounded-2xl shadow-xl border-2 border-indigo-200">
+            <form action="{{ route('submissions.grade', $submission) }}" method="POST">
+                @csrf
+                <h2 class="text-xl font-bold text-gray-900 mb-1">Noter ce travail</h2>
+                <p class="text-sm text-gray-500 mb-6">La note et le commentaire seront visibles par l'étudiant.</p>
+
+                <div class="mb-4">
+                    <label for="grade" class="block text-sm font-medium text-gray-700">Note (/20)</label>
+                    <input type="number" step="0.5" min="0" max="20" name="grade" id="grade" value="{{ old('grade', $submission->grade->grade ?? '') }}" required
+                           class="mt-1 block w-full rounded-lg border-gray-300 shadow-sm py-2 px-3 focus:border-indigo-500 focus:ring-indigo-500 transition">
+                    @error('grade') <p class="text-red-500 text-xs mt-1">{{ $message }}</p> @enderror
+                </div>
+
+                <div class="mb-6">
+                    <label for="feedback" class="block text-sm font-medium text-gray-700">Commentaire / Feedback</label>
+                    <textarea name="feedback" id="feedback" rows="6" placeholder="Ajoutez vos commentaires ici..."
+                              class="mt-1 block w-full rounded-lg border-gray-300 shadow-sm py-2 px-3 focus:border-indigo-500 focus:ring-indigo-500 transition">{{ old('feedback', $submission->grade->comment ?? '') }}</textarea>
+                    @error('feedback') <p class="text-red-500 text-xs mt-1">{{ $message }}</p> @enderror
+                </div>
+
+                <button type="submit" class="w-full flex justify-center items-center gap-2 px-6 py-3 bg-green-600 text-white font-semibold rounded-lg hover:bg-green-700 transition-colors shadow-md">
+                    <i class="fas fa-check-circle"></i>
+                    <span>{{ $submission->grade ? 'Mettre à jour la note' : 'Enregistrer la note' }}</span>
+                </button>
+            </form>
+        </div>
+        @endcan
+
+        <!-- Infos de la soumission -->
+        <div class="bg-white p-6 rounded-2xl shadow-lg border border-gray-200">
+             <h3 class="text-lg font-bold text-gray-900 mb-4">Détails</h3>
+             <dl class="space-y-3 text-sm">
+                <div class="flex justify-between"><dt class="text-gray-500">Statut</dt><dd class="font-semibold px-2 py-0.5 rounded-full {{ $submission->status === 'graded' ? 'bg-green-100 text-green-800' : 'bg-blue-100 text-blue-800' }}">{{ ucfirst($submission->status) }}</dd></div>
+                <div class="flex justify-between"><dt class="text-gray-500">Soumis le</dt><dd class="font-semibold">{{ $submission->submitted_at->format('d/m/Y à H:i') }}</dd></div>
+                @if($submission->grade)
+                <div class="flex justify-between"><dt class="text-gray-500">Noté le</dt><dd class="font-semibold">{{ $submission->grade->updated_at->format('d/m/Y') }}</dd></div>
+                @endif
+             </dl>
+        </div>
+    </aside>
+
 </div>
 @endsection

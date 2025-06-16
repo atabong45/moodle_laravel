@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\Assignment;
 use App\Models\Module;
 use App\Models\Section;
 use Illuminate\Support\Facades\Storage;
@@ -22,7 +23,7 @@ class ModuleController extends Controller
     public function index()
     {
         $modules = Module::with('section')->get();
-        
+
         return view('modules.index', compact('modules'));
     }
 
@@ -37,7 +38,7 @@ public function store(Request $request)
 {
     // // Log des données reçues avant validation
     // \Log::info('ModuleController: données reçues', $request->all());
-    
+
     try {
         // Validation des données
         $validated = $request->validate([
@@ -48,9 +49,9 @@ public function store(Request $request)
             'section_id' => ['required', 'exists:sections,id'],
             'downloadcontent' => ['required', 'integer', 'in:0,1'],
         ]);
-        
+
         // \Log::info('ModuleController: validation réussie', $validated);
-        
+
         // Stockage simple du fichier
         if ($request->hasFile('file_path')) {
             // \Log::info('ModuleController: fichier détecté', [
@@ -58,7 +59,7 @@ public function store(Request $request)
             //     'mime_type' => $request->file('file_path')->getMimeType(),
             //     'size' => $request->file('file_path')->getSize()
             // ]);
-            
+
             try {
                 $filePath = $request->file('file_path')->store('pdfs', 'public');
                 $validated['file_path'] = $filePath;
@@ -73,12 +74,25 @@ public function store(Request $request)
         } else {
            // \Log::warning('ModuleController: aucun fichier détecté malgré la validation');
         }
-        
+
         // Création du module
         try {
             $module = Module::create($validated);
+
+            if ($module) {
+                $assignment = Assignment::create([
+                    'name' => $validated['name'],
+                    'duedate' => now()->addDays(7),
+                    'attemptnumber' => 1,
+                    'module_id' => $module->id
+                ]);
+            }
+
+            $module->assignment_id = $assignment->id;
+            $module->save();
+
            // \Log::info('ModuleController: module créé avec succès', ['module_id' => $module->id]);
-            
+
             // Log du moodle_id de la section et du cours
             $section = Section::find($validated['section_id']);
             if ($section) {
@@ -90,7 +104,7 @@ public function store(Request $request)
                 //     'course_moodle_id' => $course ? $course->moodle_id : null
                 // ]);
             }
-            
+
         } catch (\Exception $e) {
             // \Log::error('ModuleController: erreur lors de la création du module', [
             //     'error' => $e->getMessage(),
@@ -98,7 +112,7 @@ public function store(Request $request)
             // ]);
             return redirect()->back()->withErrors('Erreur lors de la création du module: ' . $e->getMessage());
         }
-        
+
         // Log de création via service Moodle
         try {
             $this->moodleModuleService->logModuleCreation($module);
@@ -110,16 +124,16 @@ public function store(Request $request)
             // ]);
             // On continue même si le log Moodle échoue
         }
-        
+
         // Vérifie que la relation section existe avant d'accéder à course_id
         if (!$module->relationLoaded('section')) {
             $module->load('section');
             //\Log::info('ModuleController: relation section chargée');
         }
-        
+
         $courseId = optional($module->section)->course_id;
         //\Log::info('ModuleController: courseId récupéré', ['course_id' => $courseId]);
-        
+
         // Sécurise la redirection même si le cours n'existe pas
         if ($courseId) {
             //\Log::info('ModuleController: redirection vers la page du cours', ['course_id' => $courseId]);
@@ -127,7 +141,7 @@ public function store(Request $request)
                 ->route('courses.show', ['course' => $courseId])
                 ->with('success', 'Module créé avec succès.');
         }
-        
+
         //\Log::warning('ModuleController: cours associé introuvable');
         return redirect()->back()->withErrors('Le cours associé est introuvable.');
     } catch (\Illuminate\Validation\ValidationException $e) {
@@ -187,7 +201,7 @@ public function download(Module $module)
     if ($module->moodle_id) {
         return redirect($module->file_path);
     }
-    
+
     // Si c'est un fichier local
     return response()->download(storage_path('app/public/' . $module->file_path));
 }
