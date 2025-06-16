@@ -11,13 +11,13 @@
         </a>
     </div>
     
-    <!-- En-tête avec icône d'assignment -->
+    <!-- En-tête -->
     <div class="flex items-center mb-6">
         <div class="bg-purple-100 p-3 rounded-full mr-4">
             <i class="fas fa-clipboard-list text-purple-600 text-2xl"></i>
         </div>
         <div>
-            <h1 class="font-bold text-3xl text-gray-800">{{ $module->name ?? 'cc 1' }}</h1>
+            <h1 class="font-bold text-3xl text-gray-800">{{ $module->name }}</h1>
             <p class="text-gray-600 mt-1">Gestion des soumissions</p>
         </div>
     </div>
@@ -31,20 +31,28 @@
                 <p class="text-sm text-gray-600 mb-1">Date d'ouverture</p>
                 <p class="font-semibold text-gray-800">
                     <i class="fas fa-calendar-alt text-green-600 mr-2"></i>
-                    Samedi, 14 Juin 2025, 12:00 AM
+                    @if($module->allowsubmissionsfromdate)
+                        {{ $module->allowsubmissionsfromdate->format('l, d F Y, h:i A') }}
+                    @else
+                        Non défini
+                    @endif
                 </p>
             </div>
             <div>
                 <p class="text-sm text-gray-600 mb-1">Date limite</p>
                 <p class="font-semibold text-gray-800">
                     <i class="fas fa-clock text-orange-600 mr-2"></i>
-                    Samedi, 21 Juin 2025, 12:00 AM
+                    @if($module->duedate)
+                        {{ $module->duedate->format('l, d F Y, h:i A') }}
+                    @else
+                        Non défini
+                    @endif
                 </p>
             </div>
         </div>
         <div class="mt-4 pt-4 border-t border-blue-200">
             <p class="text-sm text-gray-600 mb-1">Description du devoir</p>
-            <p class="text-gray-800">C'est un premier cc pour tester votre maîtrise de la typologie des agents</p>
+            <p class="text-gray-800">{!! $module->intro ?? 'Aucune description disponible' !!}</p>
         </div>
     </div>
 
@@ -63,7 +71,7 @@
                     <div class="bg-blue-100 rounded-full w-16 h-16 flex items-center justify-center mx-auto mb-3">
                         <i class="fas fa-users text-blue-600 text-2xl"></i>
                     </div>
-                    <p class="text-2xl font-bold text-gray-800">0</p>
+                    <p class="text-2xl font-bold text-gray-800">{{ $submissions->count() }}</p>
                     <p class="text-sm text-gray-600">Participants</p>
                 </div>
                 
@@ -71,7 +79,7 @@
                     <div class="bg-green-100 rounded-full w-16 h-16 flex items-center justify-center mx-auto mb-3">
                         <i class="fas fa-paper-plane text-green-600 text-2xl"></i>
                     </div>
-                    <p class="text-2xl font-bold text-gray-800">0</p>
+                    <p class="text-2xl font-bold text-gray-800">{{ $submissions->where('status', 'submitted')->count() }}</p>
                     <p class="text-sm text-gray-600">Soumis</p>
                 </div>
                 
@@ -79,7 +87,9 @@
                     <div class="bg-orange-100 rounded-full w-16 h-16 flex items-center justify-center mx-auto mb-3">
                         <i class="fas fa-exclamation-triangle text-orange-600 text-2xl"></i>
                     </div>
-                    <p class="text-2xl font-bold text-gray-800">0</p>
+                   <p class="text-2xl font-bold text-gray-800">
+                        {{ $submissions->where('status', 'submitted')->whereNull('grade_id')->count() }}
+                    </p>
                     <p class="text-sm text-gray-600">À corriger</p>
                 </div>
                 
@@ -87,30 +97,16 @@
                     <div class="bg-purple-100 rounded-full w-16 h-16 flex items-center justify-center mx-auto mb-3">
                         <i class="fas fa-clock text-purple-600 text-2xl"></i>
                     </div>
-                    <p class="text-2xl font-bold text-gray-800">6 jours 18h</p>
+                    @if($module->duedate)
+                        <p class="text-2xl font-bold text-gray-800">{{ now()->diffInDays($module->duedate) }} jours</p>
+                    @else
+                        <p class="text-2xl font-bold text-gray-800">∞</p>
+                    @endif
                     <p class="text-sm text-gray-600">Temps restant</p>
                 </div>
             </div>
         </div>
     </div>
-
-    <!-- Actions rapides -->
-    {{-- <div class="grid md:grid-cols-3 gap-4 mb-6">
-        <button class="bg-blue-600 hover:bg-blue-700 text-white font-medium py-3 px-4 rounded-lg transition duration-150 ease-in-out shadow-md hover:shadow-lg flex items-center justify-center">
-            <i class="fas fa-star mr-2"></i>
-            Noter
-        </button>
-        
-        <button class="bg-gray-600 hover:bg-gray-700 text-white font-medium py-3 px-4 rounded-lg transition duration-150 ease-in-out shadow-md hover:shadow-lg flex items-center justify-center">
-            <i class="fas fa-cog mr-2"></i>
-            Paramètres
-        </button>
-        
-        <button class="bg-green-600 hover:bg-green-700 text-white font-medium py-3 px-4 rounded-lg transition duration-150 ease-in-out shadow-md hover:shadow-lg flex items-center justify-center">
-            <i class="fas fa-plus mr-2"></i>
-            Ajouter soumission
-        </button>
-    </div> --}}
 
     <!-- Liste des soumissions -->
     <div class="bg-white rounded-lg border border-gray-200 shadow-sm">
@@ -121,57 +117,49 @@
             </h2>
         </div>
         
-        <div class="p-8">
-            <div class="text-center py-12">
-                <div class="bg-gray-100 rounded-full w-24 h-24 flex items-center justify-center mx-auto mb-6">
-                    <i class="fas fa-inbox text-gray-400 text-4xl"></i>
+        @if($submissions->isEmpty())
+            <div class="p-8">
+                <div class="text-center py-12">
+                    <div class="bg-gray-100 rounded-full w-24 h-24 flex items-center justify-center mx-auto mb-6">
+                        <i class="fas fa-inbox text-gray-400 text-4xl"></i>
+                    </div>
+                    <h3 class="text-xl font-semibold text-gray-600 mb-3">Aucune soumission disponible</h3>
+                    <p class="text-gray-500 mb-6 max-w-md mx-auto">
+                        Les étudiants n'ont pas encore soumis leurs devoirs. Les soumissions apparaîtront ici une fois qu'elles seront reçues.
+                    </p>
                 </div>
-                <h3 class="text-xl font-semibold text-gray-600 mb-3">Aucune soumission disponible</h3>
-                <p class="text-gray-500 mb-6 max-w-md mx-auto">
-                    Les étudiants n'ont pas encore soumis leurs devoirs. Les soumissions apparaîtront ici une fois qu'elles seront reçues.
-                </p>
-                
-                <div class="bg-blue-50 border border-blue-200 rounded-lg p-4 max-w-lg mx-auto">
-                    <div class="flex items-start">
-                        <i class="fas fa-info-circle text-blue-600 mt-1 mr-3"></i>
-                        <div class="text-left">
-                            <p class="text-sm font-medium text-blue-800 mb-1">Information</p>
-                            <p class="text-sm text-blue-700">
-                                Les étudiants ont encore <strong>6 jours et 18 heures</strong> pour soumettre leurs travaux.
-                            </p>
+            </div>
+        @else
+            <div class="divide-y divide-gray-200">
+                @foreach($submissions as $submission)
+                    <div class="p-4 hover:bg-gray-50 transition-colors duration-200">
+                        <div class="flex items-center justify-between">
+                            <div class="flex items-center space-x-4">
+                                <div class="bg-blue-100 rounded-full w-10 h-10 flex items-center justify-center">
+                                    <i class="fas fa-user text-blue-600"></i>
+                                </div>
+                                <div>
+                                    <p class="font-medium text-gray-800">{{ $submission->user->name }}</p>
+                                    <p class="text-sm text-gray-600">
+                                        Soumis le {{ $submission->submitted_at->format('d/m/Y à H:i') }}
+                                    </p>
+                                </div>
+                            </div>
+                            <div class="flex items-center space-x-3">
+                                <span class="{{ $submission->status === 'submitted' ? 'bg-green-100 text-green-800' : 'bg-gray-100 text-gray-800' }} text-xs font-medium px-2.5 py-0.5 rounded">
+                                    {{ $submission->status === 'submitted' ? 'Soumis' : 'Brouillon' }}
+                                </span>
+                                <a href="{{ route('submissions.show', $submission->id) }}" 
+                                   class="text-blue-600 hover:text-blue-800 font-medium">
+                                    <i class="fas fa-eye mr-1"></i> Voir
+                                </a>
+                            </div>
                         </div>
                     </div>
-                </div>
+                @endforeach
             </div>
-        </div>
+        @endif
     </div>
-
-    <!-- Exemple de ce à quoi ressembleraient les soumissions (commenté) -->
-    <!--
-    <div class="bg-white rounded-lg border border-gray-200 shadow-sm mt-4">
-        <div class="p-4 border-b border-gray-200 hover:bg-gray-50 transition-colors duration-200">
-            <div class="flex items-center justify-between">
-                <div class="flex items-center space-x-4">
-                    <div class="bg-blue-100 rounded-full w-10 h-10 flex items-center justify-center">
-                        <i class="fas fa-user text-blue-600"></i>
-                    </div>
-                    <div>
-                        <p class="font-medium text-gray-800">John Doe</p>
-                        <p class="text-sm text-gray-600">Soumis le 15 Juin 2025, 14:30</p>
-                    </div>
-                </div>
-                <div class="flex items-center space-x-3">
-                    <span class="bg-green-100 text-green-800 text-xs font-medium px-2.5 py-0.5 rounded">
-                        À l'heure
-                    </span>
-                    <button class="text-blue-600 hover:text-blue-800 font-medium">
-                        <i class="fas fa-eye mr-1"></i> Voir
-                    </button>
-                </div>
-            </div>
-        </div>
-    </div>
-    -->
 </div>
 
 @endsection

@@ -21,15 +21,15 @@ class DatabaseSeeder extends Seeder
 
         $this->call(UsersSeeder::class);
 
-        $this->call(CategoriesTableSeeder::class);
+        // $this->call(CategoriesTableSeeder::class);
 
-        $this->call(CoursesTableSeeder::class);
+        // $this->call(CoursesTableSeeder::class);
 
-        $this->call(QuestionsTableSeeder::class);
+        // $this->call(QuestionsTableSeeder::class);
 
-        $this->call(AssignmentsTableSeeder::class);
+        // $this->call(AssignmentsTableSeeder::class);
 
-        $this->call(EventSeeder::class);
+        // $this->call(EventSeeder::class);
 
         // $this->call(SubmissionsTableSeeder::class);
 

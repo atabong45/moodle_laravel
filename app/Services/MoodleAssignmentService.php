@@ -214,12 +214,12 @@ public function getAssignmentDetails(int $moduleId, int $courseId): ?array
     try {
         // 1. Récupérer tous les assignments du cours
         $assignments = $this->getAssignmentsByCourseId($courseId);
-        Log::info("Assignments trouvés pour le cours ", $assignments);
+        //Log::info("Assignments trouvés pour le cours ", $assignments);
 
         // 2. Trouver l'assignment correspondant au module_id (cmid)
         foreach ($assignments as $assignment) {
             if (isset($assignment['cmid']) && $assignment['cmid'] == $moduleId) {
-                Log::info("Assignment trouvé:", $assignment);
+                //Log::info("Assignment trouvé:", $assignment);
                 
                 // 3. Récupérer le fichier PDF (premier fichier d'intro si existe)
                 $pdfData = null;

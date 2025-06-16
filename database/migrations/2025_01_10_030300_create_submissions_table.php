@@ -10,7 +10,7 @@ return new class extends Migration
     {
         Schema::create('submissions', function (Blueprint $table) {
             $table->id();
-            $table->foreignId('assignment_id')->constrained()->onDelete('cascade');
+            $table->integer('assignment_id')->unsigned();
             $table->foreignId('user_id')->constrained()->onDelete('cascade');
             $table->string('status')->default('draft'); // draft, submitted, graded
             $table->text('content')->nullable();

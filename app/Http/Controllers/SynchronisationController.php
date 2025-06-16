@@ -7,12 +7,14 @@ use App\Models\Course;
 use App\Models\User;
 use App\Models\Section;
 use App\Models\Module;
+use App\Models\Submission;
 use App\Services\MoodleCategoryService;
 use App\Services\MoodleCourseService;
 use App\Services\MoodleUserService;
 use App\Services\MoodleSectionService;
 use App\Services\MoodleModuleService;
 use App\Services\MoodleAssignmentService;
+use App\Services\MoodleSubmissionService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Storage;
@@ -27,6 +29,7 @@ class SynchronisationController extends Controller
     protected $moodleModuleService;
     protected $logFilePath;
     protected $moodleAssignmentService;
+    protected $moodleSubmissionService;
     
 
     public function __construct(
@@ -34,14 +37,15 @@ class SynchronisationController extends Controller
         MoodleUserService $moodleUserService,
         MoodleCategoryService $moodleCategoryService,
         MoodleSectionService $moodleSectionService,
-        MoodleModuleService $moodleModuleService,
-        MoodleAssignmentService $moodleAssignmentService 
+        MoodleAssignmentService $moodleAssignmentService,
+        MoodleSubmissionService $moodleSubmissionService,
     ) {
         $this->moodleCourseService = $moodleCourseService;
         $this->moodleUserService = $moodleUserService;
         $this->moodleCategoryService = $moodleCategoryService;
         $this->moodleSectionService = $moodleSectionService;
-        $this->moodleModuleService = $moodleModuleService;
+        $this->logFilePath = storage_path('logs/moodle_actions.txt');
+        $this->moodleSubmissionService = $moodleSubmissionService;
         $this->moodleAssignmentService = $moodleAssignmentService;
         $this->logFilePath = storage_path('logs/moodle_actions.txt');
     }
@@ -256,10 +260,10 @@ class SynchronisationController extends Controller
                                 $moodleCourse['id']
                             );
 
-                            Log::info("Détails de l'assignement récupérés", [
-                                'course_id' => $moodleCourse['id'],
-                                'assignment_details' => $assignmentDetails
-                            ]);
+                            // Log::info("Détails de l'assignement récupérés", [
+                            //     'course_id' => $moodleCourse['id'],
+                            //     'assignment_details' => $assignmentDetails
+                            // ]);
 
                             if ($assignmentDetails) {
                                 $moduleData = array_merge($moduleData, [
@@ -298,8 +302,11 @@ class SynchronisationController extends Controller
                                 Module::create(['moodle_id' => $module['id']] + $moduleData);
                             }
                         }
-                    // Synchronisation des assignments après la synchronisation des modules
-                        try {
+                    
+                    
+                        // Synchronisation des assignments après la synchronisation des modules
+                        
+                    try {
                             Log::info("Début de la synchronisation des assignments pour le cours", ['course_id' => $moodleCourse['id']]);
                             $this->moodleAssignmentService->syncAssignmentsWithModules($moodleCourse['id']);
                             Log::info("Synchronisation des assignments terminée pour le cours", ['course_id' => $moodleCourse['id']]);
@@ -308,11 +315,13 @@ class SynchronisationController extends Controller
                             // Continue avec les autres cours même si celui-ci échoue
                         }   
                     }
+
+                    
                 }
             }
             //Section::whereNotNull('moodle_id')->whereNotIn('moodle_id', $moodleSectionIds)->delete();
             //Module::whereNotNull('moodle_id')->whereNotIn('moodle_id', $moodleModuleIds)->delete();
-
+            $this->synchronizeSubmissions();
 
 
             return redirect()->back()->with('success', 'Synchronisation terminée !');
@@ -322,6 +331,66 @@ class SynchronisationController extends Controller
             return redirect()->back()->with('error', 'Erreur de synchronisation : ' . $e->getMessage());
         }
     }
+
+    protected function synchronizeSubmissions()
+{
+    try {
+        // Récupérer tous les modules de type 'assign'
+        $assignModules = Module::where('modname', 'assign')->get();
+        
+        foreach ($assignModules as $module) {
+            // Récupérer les soumissions depuis Moodle
+            $submissions = $this->moodleSubmissionService->getSubmissions($module->assignment_id);
+            Log::info("Soumission ========================================================================", [
+                'submission' => $submissions
+            ]);
+            
+            if (!empty($submissions)) {
+                foreach ($submissions as $submission) {
+                    // Trouver l'utilisateur correspondant
+                        Log::info("Soumission synchronisée===============================", [
+                            'submission_id' => $submission['id'],
+                            'details' => $submission
+                        ]);
+                    $user = User::where('moodle_id', $submission['userid'])->first();
+                    
+                    if ($user) {
+                        // Créer ou mettre à jour la soumission locale
+                        Submission::updateOrCreate(
+                            [
+                                'module_id' => $module->id,
+                                'user_id' => $user->id,
+                                'attempt_number' => $submission['attemptnumber']
+                            ],
+                            [
+                                'status' => $submission['status'],
+                                'content' => $this->extractSubmissionContent($submission),
+                                'submitted_at' => Carbon::createFromTimestamp($submission['timemodified'])
+                            ]
+                        );
+                    }
+                }
+            }
+        }
+        
+        Log::info('Synchronisation des soumissions terminée avec succès');
+        return true;
+    } catch (\Exception $e) {
+        Log::error('Erreur lors de la synchronisation des soumissions: ' . $e->getMessage());
+        return false;
+    }
+}
+
+// Méthode pour extraire le contenu texte des soumissions
+protected function extractSubmissionContent($submission)
+{
+    foreach ($submission['plugins'] as $plugin) {
+        if ($plugin['type'] === 'onlinetext' && isset($plugin['editorfields'][0]['text'])) {
+            return $plugin['editorfields'][0]['text'];
+        }
+    }
+    return null;
+}
     
     /**
      * Process actions logged in the file

@@ -22,22 +22,15 @@ class SubmissionController extends Controller
     public function index($moduleId)
     {
         $module = Module::findOrFail($moduleId);
-        $assignment = $module->assignment;
         
-        if (!$assignment) {
-            return redirect()->back()->with('error', 'No assignment found for this module');
-        }
-
-        // Synchroniser avec Moodle
-        $submissions = $this->submissionService->getSubmissions($assignment->moodle_id);
+        // Récupérer les submissions depuis la BD locale
+        $submissions = Submission::where('assignment_id', $module->assignment_id)->get();
         
         return view('assignment-submissions', [
             'module' => $module,
             'submissions' => $submissions,
-            'assignment' => $assignment
         ]);
     }
-
     // public function show(Submission $submission)
     // {
     //     $submissionQuestions = SubmissionQuestion::where('submission_id', $submission->id)->get();

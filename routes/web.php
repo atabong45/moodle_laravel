@@ -146,10 +146,9 @@ Route::post('assignments/{module}/compose', [AssignmentController::class, 'compo
 Route::post('assignments/{module}/grades', [AssignmentController::class, 'createGrade'])
     ->name('grades.create');
 
-Route::get('/assignments/{module}/submissions', [AssignmentController::class, 'submissions'])
-    ->name('assignments.submissions');
-
-
+Route::post('/submissions', [SubmissionController::class, 'store'])->name('submissions.store');
+Route::get('/modules/{moduleId}/submissions', [SubmissionController::class, 'index'])->name('assignments.submissions');
+Route::get('/submissions/{submission}', [SubmissionController::class, 'show'])->name('submissions.show');
 
 // Include authentication routes
 require __DIR__.'/auth.php';
